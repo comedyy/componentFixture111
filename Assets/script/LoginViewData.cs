@@ -6,6 +6,7 @@ public class LoginViewData : BaseComponentScript
     [SerializeField] Text[] arrayContainer;
     [SerializeField] LoginViewDataItem loginViewData;
     [SerializeField] LoginViewDataItem[] loginViewDatas;
+    [SerializeField] GameObject[] hides;
 
     public override void OnEnable()
     {
@@ -22,10 +23,16 @@ public class LoginViewData : BaseComponentScript
         {
             x.img.color = Color.blue;
         }
+
+        foreach(var x in hides)
+        {
+            x.gameObject.SetActive(false);
+        }
     }
 }
 
 public class LoginViewDataItem : BaseViewItem
 {
-    [SerializeField]public  Image img;
+    [SerializeField]public Image img;
+    [SerializeField] LoginViewData d111;
 }
