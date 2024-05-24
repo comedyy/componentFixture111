@@ -5,6 +5,7 @@ public class LoginViewData : BaseComponentScript
 {
     [SerializeField] Text[] arrayContainer;
     [SerializeField] LoginViewDataItem loginViewData;
+    [SerializeField] LoginViewDataItem[] loginViewDatas;
 
     public override void OnEnable()
     {
@@ -16,6 +17,11 @@ public class LoginViewData : BaseComponentScript
         }
 
         loginViewData.img.color = Color.red;
+
+        foreach(var x in loginViewDatas)
+        {
+            x.img.color = Color.blue;
+        }
     }
 }
 

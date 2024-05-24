@@ -41,6 +41,10 @@ public class BaseComponentScript
                     {
                         array.SetValue(arrayContainer[i] , i);
                     }
+                    else if(elementType.IsSubclassOf(typeof(BaseComponentScript)))
+                    {
+                        array.SetValue(arrayContainer[i].GetComponent<ComponentFixture1>().CreateScript() , i);
+                    }
                     else
                     {
                         array.SetValue(arrayContainer[i].GetComponent(elementType) , i);
