@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class LoginViewData : BaseComponentScript
 {
-    [SerializeField] ArrayContainer<Text> arrayContainer;
+    [SerializeField] Text[] arrayContainer;
     [SerializeField] LoginViewDataItem loginViewData;
 
     public override void OnEnable()

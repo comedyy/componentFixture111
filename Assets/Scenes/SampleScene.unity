@@ -777,7 +777,7 @@ MonoBehaviour:
   - filedName: arrayContainer
     Object: {fileID: 298367183}
   - filedName: loginViewData
-    Object: {fileID: 0}
+    Object: {fileID: 2013697981}
 --- !u!1 &1736970115
 GameObject:
   m_ObjectHideFlags: 0

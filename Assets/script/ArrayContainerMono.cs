@@ -3,30 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArrayContainer<T> : IEnumerable<T> where T : UnityEngine.Object
-{
-    public List<T> Values;
-
-    public ArrayContainer(ArrayContainerMono container)
-    {
-        Values = new List<T>();
-        for(int i = 0; i < container.Length; i++)
-        {
-            Values.Add(container.Get<T>(i));
-        }
-    }
-
-    public IEnumerator<T> GetEnumerator()
-    {
-        return Values.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return Values.GetEnumerator();
-    }
-}
-
 public class ArrayContainerMono : MonoBehaviour {
     [SerializeField]
     GameObject[] gameObjects;

@@ -127,7 +127,7 @@ public class ComponentFixture1Editor : Editor
 
     Type GetMonoType(Type type)
     {
-        if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ArrayContainer<>))
+        if(type.IsArray)
         {
             return typeof(ArrayContainerMono);
         }

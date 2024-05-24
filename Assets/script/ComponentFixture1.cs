@@ -29,21 +29,29 @@ public class BaseComponentScript
             }
 
             var fieldType = info.FieldType;
-            Debug.LogError(fieldType + " " + fieldType.IsSubclassOf(typeof(BaseComponentScript)));
 
-            if(fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(ArrayContainer<>))
+            if(fieldType.IsArray)
             {
-                Type genericType = typeof(ArrayContainer<>);
-                Type[] typeArgs = fieldType.GetGenericArguments();
-                Type constructedType = genericType.MakeGenericType(typeArgs);
+                var elementType = fieldType.GetElementType();
+                var arrayContainer = (ArrayContainerMono)fieldRecord.Object;
+                Array array = Array.CreateInstance(elementType, arrayContainer.Length);
+                for(int i = 0; i < arrayContainer.Length; i++)
+                {
+                    if(elementType == typeof(GameObject))
+                    {
+                        array.SetValue(arrayContainer[i] , i);
+                    }
+                    else
+                    {
+                        array.SetValue(arrayContainer[i].GetComponent(elementType) , i);
+                    }
+                }
 
-                object instance = Activator.CreateInstance(constructedType, new object[]{(ArrayContainerMono)fieldRecord.Object});
-                info.SetValue(this, instance);
+                info.SetValue(this, array);
             }
             else if(fieldType.IsSubclassOf(typeof(BaseComponentScript)))
             {
                 var x = ((ComponentFixture1)fieldRecord.Object).CreateScript();
-                Debug.LogError(x);
                 info.SetValue(this, x);
             }
             else
