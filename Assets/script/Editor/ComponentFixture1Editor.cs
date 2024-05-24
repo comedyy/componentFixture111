@@ -74,20 +74,25 @@ public class ComponentFixture1Editor : Editor
         return components;
     }
 
-
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
         var index = Array.FindIndex(_allBaseComponentType, m=>m == _info.componentTypeName);
-        if(index < 0) index = 0;
-        index = EditorGUILayout.Popup(index, _allBaseComponentType);
-        if(index > 0)
+        if(index <= 0)
         {
-            _script_name_property.stringValue = _allBaseComponentType[index];
+            index = 0;
+            index = EditorGUILayout.Popup(index, _allBaseComponentType);
+            if(index > 0)
+            {
+                _script_name_property.stringValue = _allBaseComponentType[index];
+            }
         }
-
-        // EditorGUILayout.DelayedTextField(_script_name_property);
+        else
+        {
+            EditorGUILayout.LabelField(_info.componentTypeName);
+            EditorGUILayout.LabelField("");
+        }
 
         if(string.IsNullOrEmpty(_script_name_property.stringValue))
         {
