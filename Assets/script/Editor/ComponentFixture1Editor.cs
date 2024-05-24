@@ -27,8 +27,15 @@ public class ComponentFixture1Editor : Editor
     SerializedProperty _script_name_property;
     SerializedProperty _recordArray;
 
+    static string[] _allBaseComponentType;
+
     internal void OnEnable()
     {
+        if(_allBaseComponentType == null)
+        {
+            _allBaseComponentType = FindAllBaseComponets().ToArray();
+        }
+
         this._target_object = (ComponentFixture1)this.target;
         _script_name_property = serializedObject.FindProperty("componentType");
         _recordArray = serializedObject.FindProperty("records");
@@ -38,11 +45,49 @@ public class ComponentFixture1Editor : Editor
         serializedObject.ApplyModifiedProperties();
     }
 
+    private static List<string> FindAllBaseComponets()
+    {
+        var components = new List<string>(){""};
+
+        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var assembly = Array.Find(assemblies, m=>m.GetName().Name == "Assembly-CSharp");
+        if(assembly == null) 
+        {
+            Debug.LogError("not found Assembly-CSharp");
+            Debug.LogError(string.Join("|", assemblies.Select(m=>m.GetName().Name)));
+            return components;
+        }
+
+        Type objectType = typeof(object);
+
+        string x = "";
+        // 遍历程序集中的所有类型
+        foreach (Type type in assembly.GetTypes())
+        {
+            // 检查类型的基类是否为 Object
+            if (type.IsSubclassOf(typeof(BaseComponentScript)))
+            {
+                components.Add(type.ToString());
+            }
+        }
+
+        return components;
+    }
+
+
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
-        EditorGUILayout.DelayedTextField(_script_name_property);
+        var index = Array.FindIndex(_allBaseComponentType, m=>m == _info.componentTypeName);
+        if(index < 0) index = 0;
+        index = EditorGUILayout.Popup(index, _allBaseComponentType);
+        if(index > 0)
+        {
+            _script_name_property.stringValue = _allBaseComponentType[index];
+        }
+
+        // EditorGUILayout.DelayedTextField(_script_name_property);
 
         if(string.IsNullOrEmpty(_script_name_property.stringValue))
         {

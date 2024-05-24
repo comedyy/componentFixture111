@@ -20,6 +20,8 @@ public class BaseComponentScript
         {
             if(SetByCodeGen(fieldRecord)) return;
 
+            if(fieldRecord.Object == null) return;
+
             // by reflect
             Type type = GetType();
             FieldInfo info = type.GetField(fieldRecord.filedName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
