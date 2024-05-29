@@ -6,16 +6,18 @@ using Object = UnityEngine.Object;
 using System.Linq;
 using System.Reflection;
 
-public struct EditorFiledInfo1
+public struct EditorFiledInfo
 {
     public string field_name;
-    public Type type;
+    public string displayName;
+    public Type monoType;
+    public Object Object;
 }
 
 struct ComponentFixture1EditorInfo
 {
     public string componentTypeName;
-    public List<(string, Type, Object)> typeComponents;
+    public List<EditorFiledInfo> typeComponents;
 }
 
 
@@ -40,7 +42,7 @@ public class ComponentFixture1Editor : Editor
         _script_name_property = serializedObject.FindProperty("componentType");
         _recordArray = serializedObject.FindProperty("records");
         _info.componentTypeName = _script_name_property.stringValue;
-        _info.typeComponents = new List<(string, Type, Object)>();
+        _info.typeComponents = new List<EditorFiledInfo>();
         GetTypeStruct(_info.componentTypeName);
         serializedObject.ApplyModifiedProperties();
     }
@@ -97,6 +99,11 @@ public class ComponentFixture1Editor : Editor
         if(string.IsNullOrEmpty(_script_name_property.stringValue))
         {
             _info.componentTypeName = "";
+
+            if(GUILayout.Button(""))
+            {
+
+            }
             return;
         }
 
@@ -113,12 +120,12 @@ public class ComponentFixture1Editor : Editor
         for(int i = 0; i < _info.typeComponents.Count; i++)
         {
             var item = _info.typeComponents[i];
-            var targetObj = EditorGUILayout.ObjectField(item.Item1, item.Item3, item.Item2, true);
-            if(item.Item3 != targetObj)
+            var targetObj = EditorGUILayout.ObjectField(item.field_name, item.Object, item.monoType, false);
+            if(item.Object != targetObj)
             {
-                item.Item3 = targetObj;
+                item.Object = targetObj;
                 var obj = _recordArray.GetArrayElementAtIndex(i);
-                obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].Item1;
+                obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
                 obj.FindPropertyRelative("Object").objectReferenceValue = targetObj;
             }
 
@@ -160,7 +167,10 @@ public class ComponentFixture1Editor : Editor
             {
                 var findIndex = Array.FindIndex(_target_object.records, m=>m.filedName == info.Name);
                 var target = findIndex < 0 ? null : _target_object.records[findIndex].Object;
-                _info.typeComponents.Add((info.Name, GetMonoType(info.FieldType), target));
+                _info.typeComponents.Add(new EditorFiledInfo()
+                {
+                    field_name = info.Name, displayName = $"{info.FieldType} {info.Name}",  monoType = GetMonoType(info.FieldType), Object = target
+                });
             }
         }
 
@@ -168,8 +178,8 @@ public class ComponentFixture1Editor : Editor
         for(int i = 0; i < _info.typeComponents.Count; i++)
         {
             var obj = _recordArray.GetArrayElementAtIndex(i);
-            obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].Item1;
-            obj.FindPropertyRelative("Object").objectReferenceValue = _info.typeComponents[i].Item3;
+            obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
+            obj.FindPropertyRelative("Object").objectReferenceValue = _info.typeComponents[i].Object;
         }
 
         return true;

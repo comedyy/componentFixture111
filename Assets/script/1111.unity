@@ -464,6 +464,12 @@ MonoBehaviour:
   records:
   - filedName: arrayContainer
     Object: {fileID: 1330651646}
+  - filedName: loginViewData
+    Object: {fileID: 0}
+  - filedName: loginViewDatas
+    Object: {fileID: 0}
+  - filedName: hides
+    Object: {fileID: 0}
 --- !u!1 &1092734738
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,7 +674,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1330651644}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f1e1a92967fb421683498edc9f3aec3, type: 3}
+  m_Script: {fileID: 11500000, guid: 1cd0f38f2933f9a428134647ad3aeba2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   gameObjects:
