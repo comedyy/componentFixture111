@@ -10,6 +10,10 @@ public class OneFiledRecord
 {
     public string filedName;
     public UnityEngine.Object Object;
+
+    #if UNITY_EDITOR
+    public string filedType;
+    #endif
 }
 
 public class ComponentFixture1 : MonoBehaviour

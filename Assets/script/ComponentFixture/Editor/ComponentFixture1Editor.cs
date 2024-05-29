@@ -6,28 +6,20 @@ using Object = UnityEngine.Object;
 using System.Linq;
 using System.Reflection;
 
-public struct EditorFiledInfo
+public class FiledInfo
 {
-    public string field_name;
-    public string displayName;
-    public Type monoType;
-    public Object Object;
+    public string filedName;
+    public Type type;
 }
-
-struct ComponentFixture1EditorInfo
-{
-    public string componentTypeName;
-    public List<EditorFiledInfo> typeComponents;
-}
-
 
 [CustomEditor(typeof(ComponentFixture1), true)]
 public class ComponentFixture1Editor : Editor
 {
-    ComponentFixture1EditorInfo _info;
+    static Dictionary<string, Type> _allTypeByString = new Dictionary<string, Type>();
     private ComponentFixture1 _target_object;
     SerializedProperty _script_name_property;
     SerializedProperty _recordArray;
+    Dictionary<string, Type> _allDataFields = new Dictionary<string, Type>();
 
     static string[] _allBaseComponentType;
 
@@ -39,11 +31,10 @@ public class ComponentFixture1Editor : Editor
         }
 
         this._target_object = (ComponentFixture1)this.target;
+        if(_target_object.records == null) _target_object.records = new OneFiledRecord[0];
         _script_name_property = serializedObject.FindProperty("componentType");
         _recordArray = serializedObject.FindProperty("records");
-        _info.componentTypeName = _script_name_property.stringValue;
-        _info.typeComponents = new List<EditorFiledInfo>();
-        GetTypeStruct(_info.componentTypeName);
+        GetTypeStruct(_script_name_property.stringValue);
         serializedObject.ApplyModifiedProperties();
     }
 
@@ -69,7 +60,7 @@ public class ComponentFixture1Editor : Editor
             // 检查类型的基类是否为 Object
             if (type.IsSubclassOf(typeof(BaseComponentScript)))
             {
-                components.Add(type.ToString());
+                components.Add(GetTypeName(type));
             }
         }
 
@@ -80,7 +71,8 @@ public class ComponentFixture1Editor : Editor
     {
         serializedObject.Update();
 
-        var index = Array.FindIndex(_allBaseComponentType, m=>m == _info.componentTypeName);
+        EditorGUI.BeginChangeCheck();
+        var index = Array.FindIndex(_allBaseComponentType, m=>m == _script_name_property.stringValue);
         if(index <= 0)
         {
             index = 0;
@@ -88,62 +80,133 @@ public class ComponentFixture1Editor : Editor
             if(index > 0)
             {
                 _script_name_property.stringValue = _allBaseComponentType[index];
+                GetTypeStruct(_script_name_property.stringValue);
             }
         }
         else
         {
-            EditorGUILayout.LabelField(_info.componentTypeName);
+            EditorGUILayout.LabelField(_script_name_property.stringValue);
             EditorGUILayout.LabelField("");
         }
 
-        if(string.IsNullOrEmpty(_script_name_property.stringValue))
+        if(!string.IsNullOrEmpty(_script_name_property.stringValue))
         {
-            _info.componentTypeName = "";
-
-            if(GUILayout.Button(""))
+             for(int i = 0; i < _recordArray.arraySize; i++)
             {
+                var item = _recordArray.GetArrayElementAtIndex(i);
 
-            }
-            return;
-        }
-
-        var changeType = _script_name_property.stringValue != _info.componentTypeName;
-        if(changeType)
-        {
-            if(!GetTypeStruct(_script_name_property.stringValue))
-            {
-                _script_name_property.stringValue = _info.componentTypeName;
+                var match = CheckFieldMatch(item.FindPropertyRelative("filedName").stringValue, item.FindPropertyRelative("Object").objectReferenceValue);
+                if(!match)
+                {
+                    GUI.color = Color.red;
+                }
+                item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(item.FindPropertyRelative("filedName").stringValue), 
+                                                            item.FindPropertyRelative("Object").objectReferenceValue,
+                                                            GetTypeByStr(item.FindPropertyRelative("filedType").stringValue), true);
+                GUI.color = Color.white;
             }
         }
-
-        EditorGUI.BeginChangeCheck();
-        for(int i = 0; i < _info.typeComponents.Count; i++)
-        {
-            var item = _info.typeComponents[i];
-            var targetObj = EditorGUILayout.ObjectField(item.field_name, item.Object, item.monoType, false);
-            if(item.Object != targetObj)
-            {
-                item.Object = targetObj;
-                var obj = _recordArray.GetArrayElementAtIndex(i);
-                obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
-                obj.FindPropertyRelative("Object").objectReferenceValue = targetObj;
-            }
-
-            _info.typeComponents[i] = item;
-        }
-
-        if (EditorGUI.EndChangeCheck() || changeType)
+       
+        if (EditorGUI.EndChangeCheck())
         {
             serializedObject.ApplyModifiedProperties();
         }
+    }
 
+    private bool CheckFieldMatch(string stringValue, Object objectReferenceValue)
+    {
+        if(!_allDataFields.TryGetValue(stringValue, out var type))
+        {
+            return true;
+        }
+
+        if(objectReferenceValue == null)
+        {
+            return true;
+        }
+
+        if(objectReferenceValue is ArrayContainerMono arrayMono)
+        {
+            var elementType = type.GetElementType();
+            if(elementType == typeof(GameObject))
+            {
+                return true;
+            }
+            else
+            {
+                var subType = GetMonoType(elementType);
+                if(subType == typeof(ComponentFixture1))
+                {
+                    return arrayMono.gameObjects.All(m=>{
+                        var comp = m.GetComponent<ComponentFixture1>();
+                        if(comp == null) return false;
+
+                        return comp.componentType == GetTypeName(elementType);
+                    });
+                }
+                else if(subType == typeof(ArrayContainerMono))
+                {
+                    Debug.LogError("sub type 不能为ArrayContainerMono");
+                    return false;
+                }
+                else if(subType.IsSubclassOf(typeof(Object)))
+                {
+                    return arrayMono.gameObjects.All(m=>{
+                        return m.GetComponent(subType) != null;
+                    });
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        else if(objectReferenceValue is ComponentFixture1 componentFixture)
+        {
+            return componentFixture.componentType == GetTypeName(type);
+        }
+        else
+        {
+            return type.IsAssignableFrom(objectReferenceValue.GetType());
+        }
+    }
+
+
+    private string GetDisplayName(string stringValue)
+    {
+        string x = "Object";
+        if(_allDataFields.TryGetValue(stringValue, out var type))
+        {
+            x = type.Name;
+        }
+
+        return $"【{stringValue}】-{x}";
+    }
+
+
+    private Type GetTypeByStr(string stringValue)
+    {
+        if(_allTypeByString.TryGetValue(stringValue, out var type))
+        {
+            return type;
+        }
+
+        type = Type.GetType(stringValue);
+        if(type == null)
+        {
+            type = typeof(Object);
+        }
+
+        _allTypeByString.Add(stringValue, type);
+
+        return type;
     }
 
     private bool GetTypeStruct(string name)
     {
         if (string.IsNullOrEmpty(name)) return false;
 
-        var t = Type.GetType(string.Format("{0},Assembly-CSharp", name));
+        var t = Type.GetType(name);
         if (t == null)
         {
             Debug.LogErrorFormat("not find type {0}", name);
@@ -156,48 +219,78 @@ public class ComponentFixture1Editor : Editor
             return false;
         }
 
-        if(_target_object.records == null) _target_object.records = new OneFiledRecord[0];
-        _info.componentTypeName = name;
-        _info.typeComponents.Clear();
         FieldInfo[] fields = t.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
         for (int i = 0; i < fields.Length; i++)
         {
-            FieldInfo info = fields[i];
-            if (info.GetCustomAttribute<SerializeField>() != null)
+            FieldInfo fieldInfo = fields[i];
+            if (fieldInfo.GetCustomAttribute<SerializeField>() != null)
             {
-                var findIndex = Array.FindIndex(_target_object.records, m=>m.filedName == info.Name);
-                var target = findIndex < 0 ? null : _target_object.records[findIndex].Object;
-                _info.typeComponents.Add(new EditorFiledInfo()
+                var findIndex = Array.FindIndex(_target_object.records, m=>m.filedName == fieldInfo.Name);
+                var fieldMonoType = GetMonoType(fieldInfo.FieldType);
+                if(fieldMonoType == null)
                 {
-                    field_name = info.Name, displayName = $"{info.FieldType} {info.Name}",  monoType = GetMonoType(info.FieldType), Object = target
-                });
+                    continue;
+                }
+
+                var fieldMonoTypeStr = GetTypeName(fieldMonoType);
+
+                _allDataFields.Add(fieldInfo.Name, fieldInfo.FieldType);
+                if(findIndex < 0)
+                {
+                    var lastIndex = _recordArray.arraySize;
+                    _recordArray.InsertArrayElementAtIndex(lastIndex);
+                    var obj = _recordArray.GetArrayElementAtIndex(lastIndex);
+                    obj.FindPropertyRelative("filedName").stringValue = fieldInfo.Name;
+                    obj.FindPropertyRelative("filedType").stringValue = fieldMonoTypeStr;
+                    obj.FindPropertyRelative("Object").objectReferenceValue = null;
+                }
             }
         }
 
-        _recordArray.arraySize = _info.typeComponents.Count;
-        for(int i = 0; i < _info.typeComponents.Count; i++)
-        {
-            var obj = _recordArray.GetArrayElementAtIndex(i);
-            obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
-            obj.FindPropertyRelative("Object").objectReferenceValue = _info.typeComponents[i].Object;
-        }
+        // _recordArray.arraySize = _info.typeComponents.Count;
+        // for(int i = 0; i < _info.typeComponents.Count; i++)
+        // {
+        //     var obj = _recordArray.GetArrayElementAtIndex(i);
+        //     obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
+        //     obj.FindPropertyRelative("Object").objectReferenceValue = _info.typeComponents[i].Object;
+        // }
 
         return true;
+    }
+
+    static string GetTypeName(Type type)
+    {
+        return type.FullName + ", " + type.Assembly.GetName().Name;
     }
 
     Type GetMonoType(Type type)
     {
         if(type.IsArray)
         {
-            return typeof(ArrayContainerMono);
+            var subType = type.GetElementType();
+            if(subType.IsArray)
+            {
+                return null;
+            }
+
+            if(GetMonoType(subType) != null)
+            {
+                return typeof(ArrayContainerMono);
+            }
+            else
+            {
+                return null;
+            }
         }
         else if(type.IsSubclassOf(typeof(BaseComponentScript)))
         {
             return typeof(ComponentFixture1);
         }
-        else
+        else if(type.IsSubclassOf(typeof(Object)))
         {
             return type;
         }
+        
+        return null;
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ArrayContainerMono : MonoBehaviour {
     [SerializeField]
-    GameObject[] gameObjects;
+    public GameObject[] gameObjects;
 
     public int Length => gameObjects.Length;
 
