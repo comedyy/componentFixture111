@@ -5,6 +5,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using System.Linq;
 using System.Reflection;
+using System.IO;
 
 public class FiledInfo
 {
@@ -20,6 +21,8 @@ public class ComponentFixture1Editor : Editor
     SerializedProperty _script_name_property;
     SerializedProperty _recordArray;
     Dictionary<string, Type> _allDataFields = new Dictionary<string, Type>();
+    string _newFiledName = "";
+    string _errorMsg = "";
 
     static string[] _allBaseComponentType;
 
@@ -34,7 +37,7 @@ public class ComponentFixture1Editor : Editor
         if(_target_object.records == null) _target_object.records = new OneFiledRecord[0];
         _script_name_property = serializedObject.FindProperty("componentType");
         _recordArray = serializedObject.FindProperty("records");
-        GetTypeStruct(_script_name_property.stringValue);
+        GetTypeStruct(_script_name_property.stringValue, false);
         serializedObject.ApplyModifiedProperties();
     }
 
@@ -60,7 +63,7 @@ public class ComponentFixture1Editor : Editor
             // 检查类型的基类是否为 Object
             if (type.IsSubclassOf(typeof(BaseComponentScript)))
             {
-                components.Add(GetTypeName(type));
+                components.Add(GetSaveTypeName(type));
             }
         }
 
@@ -72,45 +75,174 @@ public class ComponentFixture1Editor : Editor
         serializedObject.Update();
 
         EditorGUI.BeginChangeCheck();
-        var index = Array.FindIndex(_allBaseComponentType, m=>m == _script_name_property.stringValue);
-        if(index <= 0)
+        if(string.IsNullOrEmpty(_script_name_property.stringValue)) // 完全empty
         {
-            index = 0;
-            index = EditorGUILayout.Popup(index, _allBaseComponentType);
-            if(index > 0)
+            var index = Array.FindIndex(_allBaseComponentType, m=>m == _script_name_property.stringValue);
+            if(index <= 0)
             {
-                _script_name_property.stringValue = _allBaseComponentType[index];
-                GetTypeStruct(_script_name_property.stringValue);
+                index = 0;
+                index = EditorGUILayout.Popup(index, _allBaseComponentType);
+                if(index > 0)
+                {
+                    _script_name_property.stringValue = _allBaseComponentType[index];
+                    GetTypeStruct(_script_name_property.stringValue, true);
+                }
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("新增类型：");
+            _newFiledName = EditorGUILayout.TextField(_newFiledName);
+            if(GUILayout.Button("+"))
+            {
+                if(Type.GetType(_newFiledName) != null)
+                {
+                    _errorMsg = $"{_newFiledName} exist, can not create";
+                    _newFiledName = "";
+                }
+                else
+                {
+                    _script_name_property.stringValue = $"{_newFiledName},Assembly-CSharp";
+                    _newFiledName = "";
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
+
+            if(string.IsNullOrEmpty(_script_name_property.stringValue))
+            {
+                EditorGUI.EndChangeCheck();
+                return;
             }
         }
         else
         {
-            EditorGUILayout.LabelField(_script_name_property.stringValue);
-            EditorGUILayout.LabelField("");
+            DrawScriptTitle();
         }
 
-        if(!string.IsNullOrEmpty(_script_name_property.stringValue))
+        for(int i = _recordArray.arraySize - 1; i >= 0; i--)
         {
-             for(int i = 0; i < _recordArray.arraySize; i++)
+            var item = _recordArray.GetArrayElementAtIndex(i);
+
+            EditorGUILayout.BeginHorizontal();
+            var match = CheckFieldMatch(item.FindPropertyRelative("filedName").stringValue, item.FindPropertyRelative("Object").objectReferenceValue);
+            if(!match)
+            {
+                GUI.color = Color.red;
+            }
+
+            item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(item.FindPropertyRelative("filedName").stringValue), 
+                                                        item.FindPropertyRelative("Object").objectReferenceValue,
+                                                        GetTypeByStr(item.FindPropertyRelative("filedType").stringValue), true);
+            GUI.color = Color.white;
+
+            if(GUILayout.Button("x"))
+            {
+                _recordArray.DeleteArrayElementAtIndex(i);
+            }
+            
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("新增字段：");
+        _newFiledName = EditorGUILayout.TextField(_newFiledName);
+        if(GUILayout.Button("+"))
+        {
+            bool exist = false;
+            for(int i = 0; i < _recordArray.arraySize; i++)
             {
                 var item = _recordArray.GetArrayElementAtIndex(i);
-
-                var match = CheckFieldMatch(item.FindPropertyRelative("filedName").stringValue, item.FindPropertyRelative("Object").objectReferenceValue);
-                if(!match)
+                if(item.FindPropertyRelative("filedName").stringValue == _newFiledName)
                 {
-                    GUI.color = Color.red;
+                    exist = true;
                 }
-                item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(item.FindPropertyRelative("filedName").stringValue), 
-                                                            item.FindPropertyRelative("Object").objectReferenceValue,
-                                                            GetTypeByStr(item.FindPropertyRelative("filedType").stringValue), true);
-                GUI.color = Color.white;
             }
+
+            if(exist)
+            {
+                _errorMsg = $"{_newFiledName} exist, can not create filed";
+                _newFiledName = "";
+            }
+            else
+            {
+                _recordArray.arraySize = _recordArray.arraySize + 1;
+                var item = _recordArray.GetArrayElementAtIndex(_recordArray.arraySize - 1);
+                item.FindPropertyRelative("filedName").stringValue = _newFiledName;
+                item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(typeof(Object));
+                _newFiledName = "";
+            }
+        }
+        EditorGUILayout.EndHorizontal();        
+
+        if(HasThingSave() && GUILayout.Button("save cs file"))
+        {
+            SaveCSFile();
         }
        
         if (EditorGUI.EndChangeCheck())
         {
             serializedObject.ApplyModifiedProperties();
         }
+    }
+
+    private void DrawScriptTitle()
+    {
+        var isExist = Type.GetType(_script_name_property.stringValue) != null;
+        if(!isExist)
+        {
+            GUI.color = Color.red;
+        }
+
+        var title = isExist ? _script_name_property.stringValue : $"未保存对象 【{_script_name_property.stringValue}】";
+        EditorGUILayout.LabelField(title);
+
+        GUI.color = Color.white;
+    }
+
+    private bool HasThingSave()
+    {
+        if(Type.GetType(_script_name_property.stringValue) == null)
+        {
+            return true;
+        } 
+
+        var toutalCount = _allDataFields.Count;
+        if(toutalCount != _recordArray.arraySize)
+        {
+            return true;
+        } 
+
+        for(int i = 0; i < toutalCount; i++)
+        {
+            var item = _recordArray.GetArrayElementAtIndex(i);
+            var filedName = item.FindPropertyRelative("filedName").stringValue;
+            var fieldType = item.FindPropertyRelative("filedType").stringValue;
+            if(!_allDataFields.TryGetValue(filedName, out var type) || GetSaveTypeName(GetMonoType(type)) != fieldType)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SaveCSFile()
+    {
+        var fileName = _script_name_property.stringValue.Split(',')[0];
+        var str = "using UnityEngine;\n";
+        str += $"public partial class {fileName} : BaseComponentScript{{ \n";
+        for(int i = 0; i < _recordArray.arraySize; i++)
+        {
+            var item = _recordArray.GetArrayElementAtIndex(i);
+            var filedName = item.FindPropertyRelative("filedName").stringValue;
+            var fieldType = item.FindPropertyRelative("filedType").stringValue;
+            str += $"[SerializeField] {fieldType.Split(',')[0]} {filedName}; \n";
+        }
+        str += "}\n";
+
+        File.WriteAllText(Application.dataPath + $"/script/UI/{fileName}.cs", str);
+
+        AssetDatabase.Refresh();
     }
 
     private bool CheckFieldMatch(string stringValue, Object objectReferenceValue)
@@ -141,7 +273,7 @@ public class ComponentFixture1Editor : Editor
                         var comp = m.GetComponent<ComponentFixture1>();
                         if(comp == null) return false;
 
-                        return comp.componentType == GetTypeName(elementType);
+                        return comp.componentType == GetSaveTypeName(elementType);
                     });
                 }
                 else if(subType == typeof(ArrayContainerMono))
@@ -163,7 +295,7 @@ public class ComponentFixture1Editor : Editor
         }
         else if(objectReferenceValue is ComponentFixture1 componentFixture)
         {
-            return componentFixture.componentType == GetTypeName(type);
+            return componentFixture.componentType == GetSaveTypeName(type);
         }
         else
         {
@@ -202,14 +334,17 @@ public class ComponentFixture1Editor : Editor
         return type;
     }
 
-    private bool GetTypeStruct(string name)
+    private bool GetTypeStruct(string name, bool validateType)
     {
         if (string.IsNullOrEmpty(name)) return false;
 
         var t = Type.GetType(name);
         if (t == null)
         {
-            Debug.LogErrorFormat("not find type {0}", name);
+            if(validateType)
+            {
+                Debug.LogErrorFormat("not find type {0}", name);
+            }
             return false;
         }
 
@@ -232,7 +367,7 @@ public class ComponentFixture1Editor : Editor
                     continue;
                 }
 
-                var fieldMonoTypeStr = GetTypeName(fieldMonoType);
+                var fieldMonoTypeStr = GetSaveTypeName(fieldMonoType);
 
                 _allDataFields.Add(fieldInfo.Name, fieldInfo.FieldType);
                 if(findIndex < 0)
@@ -258,7 +393,7 @@ public class ComponentFixture1Editor : Editor
         return true;
     }
 
-    static string GetTypeName(Type type)
+    static string GetSaveTypeName(Type type)
     {
         return type.FullName + ", " + type.Assembly.GetName().Name;
     }

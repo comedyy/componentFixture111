@@ -21,6 +21,15 @@
 
 6. 自动化代码。 我们希望每隔view都有自己的Data结构。这样可以实现自动化逻辑实现。 比如如果我知道这个 data的参数最好。是的，这参数也可以在界面上定义。 XXX : BaseComponent<T> {} 这个T就是那个类型。我们把T 绑定给那个filed。 通过folder方式，如果这个字段已经绑定了，那么就显示folder。
 
+7. 后面把这个c#改成TS。
+
+Text只能对应string
+Image对应sprite
+GameObject对应的active，deActive。
 
 
-    
+计划：
+1. 先弄自动生成代码的。
+一个componentfixture挂上去，会显示一个下拉框跟一个+号按钮还有一个inputfield。可以输入类型，然后点击+号，就创建一个类型。
+
+
