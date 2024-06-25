@@ -23,6 +23,7 @@ public class ComponentFixture1Editor : Editor
     Dictionary<string, Type> _allDataFields = new Dictionary<string, Type>();
     string _newFiledName = "";
     string _errorMsg = "";
+    string folderFiledName = "";
 
     static string[] _allBaseComponentType;
 
@@ -119,7 +120,7 @@ public class ComponentFixture1Editor : Editor
             DrawScriptTitle();
         }
 
-        for(int i = _recordArray.arraySize - 1; i >= 0; i--)
+        for(int i = 0; i < _recordArray.arraySize; i++)
         {
             var item = _recordArray.GetArrayElementAtIndex(i);
 
@@ -142,12 +143,41 @@ public class ComponentFixture1Editor : Editor
                                                         GetTypeByStr(item.FindPropertyRelative("filedType").stringValue), true);
             GUI.color = Color.white;
 
+           
             if(GUILayout.Button("x"))
             {
                 _recordArray.DeleteArrayElementAtIndex(i);
+                i--;
+                continue;
             }
             
             EditorGUILayout.EndHorizontal();
+
+             if(isNew && item.FindPropertyRelative("Object").objectReferenceValue != null) // 可以选择类型
+            {
+                var obj = item.FindPropertyRelative("Object").objectReferenceValue;
+                var isFold = EditorGUILayout.Foldout(folderFiledName == filedName, "选择组件");
+                if(isFold)
+                {
+                    folderFiledName = filedName;
+
+                    var components = (obj as Component).GetComponents<Component>();
+                    foreach(var x in components)
+                    {
+                        if(GUILayout.Button($"{x.GetType()}"))
+                        {
+                            item.FindPropertyRelative("Object").objectReferenceValue = x;
+                            item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(x.GetType());
+                            folderFiledName = "";
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    folderFiledName = "";
+                }
+            }
         }
 
         EditorGUILayout.BeginHorizontal();
@@ -223,22 +253,30 @@ public class ComponentFixture1Editor : Editor
             return true;
         } 
 
-        var toutalCount = _allDataFields.Count;
-        if(toutalCount != _recordArray.arraySize)
-        {
-            return true;
-        } 
-
-        for(int i = 0; i < toutalCount; i++)
+        for(int i = 0; i < _recordArray.arraySize; i++)
         {
             var item = _recordArray.GetArrayElementAtIndex(i);
             var filedName = item.FindPropertyRelative("filedName").stringValue;
             var fieldType = item.FindPropertyRelative("filedType").stringValue;
+
+            var isNewField = !_allDataFields.ContainsKey(filedName);
+            var value = item.FindPropertyRelative("Object").objectReferenceValue;
+            if(value == null && isNewField)
+            {
+                return false;
+            }
+
             if(!_allDataFields.TryGetValue(filedName, out var type) || GetSaveTypeName(GetMonoType(type)) != fieldType)
             {
                 return true;
             }
         }
+
+        var toutalCount = _allDataFields.Count;
+        if(toutalCount != _recordArray.arraySize)
+        {
+            return true;
+        } 
 
         return false;
     }
