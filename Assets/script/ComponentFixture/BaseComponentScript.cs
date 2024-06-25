@@ -9,11 +9,11 @@ public class BaseComponentScript
 {
     public void OnAfterDeserializeSetFieldRecord(OneFiledRecord[] fieldRecords)
     {
+        if(SetByCodeGen(fieldRecords)) return;
+
         foreach(var fieldRecord in fieldRecords)
         {
-            if(SetByCodeGen(fieldRecord)) return;
-
-            if(fieldRecord.Object == null) return;
+            if(fieldRecord.Object == null) continue;
 
             // by reflect
             Type type = GetType();
@@ -60,7 +60,7 @@ public class BaseComponentScript
         }
     }
 
-    protected virtual bool SetByCodeGen(OneFiledRecord oneFiledRecord){ return false;}
+    protected virtual bool SetByCodeGen(OneFiledRecord[] oneFiledRecords){ return false;}
     public virtual void OnEnable(){}
     public virtual void Awake(){}
     public virtual void OnDisable(){}

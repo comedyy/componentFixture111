@@ -167,7 +167,7 @@ public class ComponentFixture1Editor : Editor
                         if(GUILayout.Button($"{x.GetType()}"))
                         {
                             item.FindPropertyRelative("Object").objectReferenceValue = x;
-                            item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(x.GetType());
+                            item.FindPropertyRelative("filedType").stringValue = GetSaveType(x);
                             folderFiledName = "";
                             break;
                         }
@@ -293,6 +293,30 @@ public class ComponentFixture1Editor : Editor
             var fieldType = item.FindPropertyRelative("filedType").stringValue;
             str += $"[SerializeField] {fieldType.Split(',')[0]} {filedName}; \n";
         }
+
+        str += $"protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords){{ \n";
+        str += $"foreach(var oneFiledRecord in oneFiledRecords) {{\n";
+        for(int i = 0; i < _recordArray.arraySize; i++)
+        {
+            var item = _recordArray.GetArrayElementAtIndex(i);
+            var filedName = item.FindPropertyRelative("filedName").stringValue;
+            var fieldType = item.FindPropertyRelative("filedType").stringValue;
+            var obj = item.FindPropertyRelative("Object").objectReferenceValue;
+
+            if(obj is ComponentFixture1)
+            {
+                str += $"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType.Split(',')[0]}; \n";
+            }
+            else
+            {
+                str += $"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType.Split(',')[0]}; \n";
+            }
+        }
+
+        str += "}\n";
+
+        str += "return true;\n";
+        str += "}\n";
         str += "}\n";
 
         File.WriteAllText(Application.dataPath + $"/script/UI/{fileName}.cs", str);
@@ -453,6 +477,23 @@ public class ComponentFixture1Editor : Editor
         return type.FullName + ", " + type.Assembly.GetName().Name;
     }
 
+    string GetSaveType(Component c)
+    {
+        var type = c.GetType();
+        if(type == typeof(ComponentFixture1))
+        {
+            return c.GetComponent<ComponentFixture1>().componentType;
+        }
+        else if(c is ArrayContainerMono)
+        {
+            return GetSaveTypeName(typeof(GameObject[]));
+        }
+        else
+        {
+            return GetSaveTypeName(type);
+        }
+    }
+
     Type GetMonoType(Type type)
     {
         if(type.IsArray)
@@ -476,7 +517,7 @@ public class ComponentFixture1Editor : Editor
         {
             return typeof(ComponentFixture1);
         }
-        else if(type.IsSubclassOf(typeof(Component)))
+        else if(type.IsSubclassOf(typeof(Object)))
         {
             return type;
         }
