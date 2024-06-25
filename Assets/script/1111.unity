@@ -1002,8 +1002,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e7e1723b23d7c4083f1c9dc8624879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: dddfd,Assembly-CSharp
-  records: []
+  componentType: dddfd, Assembly-CSharp
+  records:
+  - filedName: aaa
+    Object: {fileID: 0}
+    filedType: UnityEngine.Transform, UnityEngine.CoreModule
+  - filedName: bbb
+    Object: {fileID: 0}
+    filedType: UnityEngine.Transform, UnityEngine.CoreModule
+  - filedName: dsfsdf
+    Object: {fileID: 0}
+    filedType: UnityEngine.Transform, UnityEngine.CoreModule
 --- !u!1 &1934091848
 GameObject:
   m_ObjectHideFlags: 0

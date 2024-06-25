@@ -31,8 +31,3 @@ public class LoginViewData : BaseComponentScript
     }
 }
 
-public class LoginViewDataItem : BaseViewItem
-{
-    [SerializeField]public Image img;
-    [SerializeField] LoginViewData d111;
-}

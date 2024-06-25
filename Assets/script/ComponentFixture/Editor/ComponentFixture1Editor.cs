@@ -124,7 +124,14 @@ public class ComponentFixture1Editor : Editor
             var item = _recordArray.GetArrayElementAtIndex(i);
 
             EditorGUILayout.BeginHorizontal();
-            var match = CheckFieldMatch(item.FindPropertyRelative("filedName").stringValue, item.FindPropertyRelative("Object").objectReferenceValue);
+            var filedName = item.FindPropertyRelative("filedName").stringValue;
+            var isNew = !_allDataFields.ContainsKey(filedName);
+            if(isNew)
+            {
+                GUI.color = Color.yellow;
+            }
+
+            var match = CheckFieldMatch(filedName, item.FindPropertyRelative("Object").objectReferenceValue);
             if(!match)
             {
                 GUI.color = Color.red;
@@ -158,7 +165,7 @@ public class ComponentFixture1Editor : Editor
                 }
             }
 
-            if(exist)
+            if(exist || string.IsNullOrWhiteSpace(_newFiledName))
             {
                 _errorMsg = $"{_newFiledName} exist, can not create filed";
                 _newFiledName = "";
@@ -168,15 +175,18 @@ public class ComponentFixture1Editor : Editor
                 _recordArray.arraySize = _recordArray.arraySize + 1;
                 var item = _recordArray.GetArrayElementAtIndex(_recordArray.arraySize - 1);
                 item.FindPropertyRelative("filedName").stringValue = _newFiledName;
-                item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(typeof(Object));
+                item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(typeof(Component));
                 _newFiledName = "";
             }
         }
         EditorGUILayout.EndHorizontal();        
 
-        if(HasThingSave() && GUILayout.Button("save cs file"))
+        if(HasThingSave())
         {
-            SaveCSFile();
+            if(GUILayout.Button("save cs file"))
+            {
+                SaveCSFile();
+            }
         }
        
         if (EditorGUI.EndChangeCheck())
@@ -188,15 +198,22 @@ public class ComponentFixture1Editor : Editor
     private void DrawScriptTitle()
     {
         var isExist = Type.GetType(_script_name_property.stringValue) != null;
-        if(!isExist)
+
+        if(isExist)
+        {
+            GUI.enabled = false;
+            var fileName = _script_name_property.stringValue.Split(',')[0];
+            var monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>($"Assets/script/UI/{fileName}.cs");
+            EditorGUILayout.ObjectField("", monoScript, typeof(MonoScript), false);
+            GUI.enabled = true;
+        }
+        else
         {
             GUI.color = Color.red;
+            var title = $"未保存对象 【{_script_name_property.stringValue}】";
+            EditorGUILayout.LabelField(title);
+            GUI.color = Color.white;
         }
-
-        var title = isExist ? _script_name_property.stringValue : $"未保存对象 【{_script_name_property.stringValue}】";
-        EditorGUILayout.LabelField(title);
-
-        GUI.color = Color.white;
     }
 
     private bool HasThingSave()
@@ -421,7 +438,7 @@ public class ComponentFixture1Editor : Editor
         {
             return typeof(ComponentFixture1);
         }
-        else if(type.IsSubclassOf(typeof(Object)))
+        else if(type.IsSubclassOf(typeof(Component)))
         {
             return type;
         }

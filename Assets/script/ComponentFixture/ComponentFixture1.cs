@@ -31,7 +31,13 @@ public class ComponentFixture1 : MonoBehaviour
     {
         if(baseComponentScript != null) return baseComponentScript;
 
-        baseComponentScript = (BaseComponentScript)Activator.CreateInstance(Type.GetType(componentType), true);
+        var type = Type.GetType(componentType);
+        if(type == null)
+        {
+            throw new Exception($"not found Type {type}");
+        }
+
+        baseComponentScript = (BaseComponentScript)Activator.CreateInstance(type, true);
         Assert.IsTrue(baseComponentScript != null);
         baseComponentScript.OnAfterDeserializeSetFieldRecord(records);
         baseComponentScript.Awake();
@@ -44,11 +50,11 @@ public class ComponentFixture1 : MonoBehaviour
     }
 
     private void OnDisable() {
-        baseComponentScript.OnDisable();
+        baseComponentScript?.OnDisable();
     }
 
     void OnDestroy()
     {
-        baseComponentScript.OnDisable();
+        baseComponentScript?.OnDisable();
     }
 }
