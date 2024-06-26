@@ -266,7 +266,7 @@ public class ComponentFixture1Editor : Editor
                 return false;
             }
 
-            if(!_allDataFields.TryGetValue(filedName, out var type) || GetSaveTypeName(GetMonoType(type)) != fieldType)
+            if(!_allDataFields.TryGetValue(filedName, out var type) || GetSaveTypeName(type) != fieldType)
             {
                 return true;
             }
