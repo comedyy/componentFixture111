@@ -38,12 +38,7 @@ public class CodeGeneratorBuilder
 
     public void AppendLine(string line)
     {
-        for(int i = 0; i < _indent; i++)
-        {
-            line = "    " + line;
-        }
-
-        _lines.Add(line);
+        _lines.Add(new string('\t', _indent) + line);
     }
 
     public void NewLine(){
