@@ -215,7 +215,7 @@ public class ComponentFixture1Editor : Editor
         {
             if(GUILayout.Button("save cs file"))
             {
-                SaveCSFile();
+                CodeGenerator.SaveCSFile(_script_name_property, _recordArray);
             }
         }
        
@@ -279,49 +279,6 @@ public class ComponentFixture1Editor : Editor
         } 
 
         return false;
-    }
-
-    private void SaveCSFile()
-    {
-        var fileName = _script_name_property.stringValue.Split(',')[0];
-        var str = "using UnityEngine;\n";
-        str += $"public partial class {fileName} : BaseComponentScript{{ \n";
-        for(int i = 0; i < _recordArray.arraySize; i++)
-        {
-            var item = _recordArray.GetArrayElementAtIndex(i);
-            var filedName = item.FindPropertyRelative("filedName").stringValue;
-            var fieldType = item.FindPropertyRelative("filedType").stringValue;
-            str += $"[SerializeField] {fieldType.Split(',')[0]} {filedName}; \n";
-        }
-
-        str += $"protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords){{ \n";
-        str += $"foreach(var oneFiledRecord in oneFiledRecords) {{\n";
-        for(int i = 0; i < _recordArray.arraySize; i++)
-        {
-            var item = _recordArray.GetArrayElementAtIndex(i);
-            var filedName = item.FindPropertyRelative("filedName").stringValue;
-            var fieldType = item.FindPropertyRelative("filedType").stringValue;
-            var obj = item.FindPropertyRelative("Object").objectReferenceValue;
-
-            if(obj is ComponentFixture1)
-            {
-                str += $"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType.Split(',')[0]}; \n";
-            }
-            else
-            {
-                str += $"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType.Split(',')[0]}; \n";
-            }
-        }
-
-        str += "}\n";
-
-        str += "return true;\n";
-        str += "}\n";
-        str += "}\n";
-
-        File.WriteAllText(Application.dataPath + $"/script/UI/{fileName}.cs", str);
-
-        AssetDatabase.Refresh();
     }
 
     private bool CheckFieldMatch(string stringValue, Object objectReferenceValue)
