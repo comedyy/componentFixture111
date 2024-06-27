@@ -20,7 +20,7 @@ public class ArrayContainerMono : MonoBehaviour {
     public T Get<T>(int index)
     {
         return gameObjects[index].GetComponent<T>();
-    }
+    }   
 
     #if UNITY_EDITOR
     void OnValidate() {

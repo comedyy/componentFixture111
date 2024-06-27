@@ -324,39 +324,17 @@ public class ComponentFixture1Editor : Editor
 
         if(objectReferenceValue is ArrayContainerMono arrayMono)
         {
+            return true;
+        }
+        else if(objectReferenceValue is ArrayContainerComponent container)
+        {
             var elementType = type.GetElementType();
-            if(elementType == typeof(GameObject))
-            {
-                return true;
-            }
-            else
-            {
-                var subType = GetMonoType(elementType);
-                if(subType == typeof(ComponentFixture1))
-                {
-                    return arrayMono.gameObjects.All(m=>{
-                        var comp = m.GetComponent<ComponentFixture1>();
-                        if(comp == null) return false;
-
-                        return comp.componentType == GetSaveTypeName(elementType);
-                    });
-                }
-                else if(subType == typeof(ArrayContainerMono))
-                {
-                    Debug.LogError("sub type 不能为ArrayContainerMono");
-                    return false;
-                }
-                else if(subType.IsSubclassOf(typeof(Object)))
-                {
-                    return arrayMono.gameObjects.All(m=>{
-                        return m.GetComponent(subType) != null;
-                    });
-                }
-                else
-                {
-                    return false;
-                }
-            }
+            return container.componentType == GetSaveTypeName(elementType);
+        }
+        else if(objectReferenceValue is ArrayContainerComponentFixture fixtureArray)
+        {
+            var elementType = type.GetElementType();
+            return fixtureArray.components[0].componentType == GetSaveTypeName(elementType);
         }
         else if(objectReferenceValue is ComponentFixture1 componentFixture)
         {
@@ -434,13 +412,18 @@ public class ComponentFixture1Editor : Editor
                 return null;
             }
 
-            if(GetMonoType(subType) != null)
+            var monoSubType = GetMonoType(subType);
+            if(monoSubType == typeof(ComponentFixture1))
+            {
+                return typeof(ArrayContainerComponentFixture);
+            }
+            else if(monoSubType == typeof(GameObject))
             {
                 return typeof(ArrayContainerMono);
             }
             else
             {
-                return null;
+                return typeof(ArrayContainerComponent);
             }
         }
         else if(type.IsSubclassOf(typeof(BaseComponentScript)))

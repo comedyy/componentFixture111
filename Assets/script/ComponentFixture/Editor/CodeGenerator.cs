@@ -44,6 +44,19 @@ public class CodeGenerator
                         {
                             codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType}; ");
                         }
+                        else if(obj is ArrayContainerComponent)
+                        {
+                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerComponent)oneFiledRecord.Object).components as {fieldType}; ");
+                        }
+                        else if(obj is ArrayContainerComponentFixture arrayFixture)
+                        {
+                            using(codeGeneratorBuilder.StartFold($"if(oneFiledRecord.filedName == \"{filedName}\") "))
+                            {
+                                codeGeneratorBuilder.AppendLine($"var allCompnents = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components;");
+                                codeGeneratorBuilder.AppendLine($"{filedName} = new LoginViewDataItem[allCompnents.Length];");
+                                codeGeneratorBuilder.AppendLine($"for(int i = 0; i < allCompnents.Length; i++) {filedName}[i] = allCompnents[i].CreateScript() as {GetSaveType(arrayFixture.components[0])}; ");
+                            }
+                        }
                         else
                         {
                             codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType}; ");
@@ -67,6 +80,20 @@ public class CodeGenerator
         {
             var x = c.GetComponent<ComponentFixture1>().componentType;
             return x.Split(',')[0];
+        }
+        else if(c is ArrayContainerComponent arrayContainerComponent)
+        {
+            var x = arrayContainerComponent.componentType;
+            var y = x.Split(',')[0];
+            return y + "[]";
+        }
+        else if(c is ArrayContainerComponentFixture fixture)
+        {
+            if(fixture.components.Length == 0) throw new System.Exception("ArrayContainerComponentFixture not fill data");
+
+            var x = fixture.components[0].componentType;
+            var y = x.Split(',')[0];
+            return y + "[]";
         }
         else if(c is ArrayContainerMono)
         {
