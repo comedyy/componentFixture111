@@ -71,11 +71,8 @@ public class ComponentFixture1Editor : Editor
         return components;
     }
 
-    public override void OnInspectorGUI()
+    bool DrawTitle()
     {
-        serializedObject.Update();
-
-        EditorGUI.BeginChangeCheck();
         if(string.IsNullOrEmpty(_script_name_property.stringValue)) // 完全empty
         {
             var index = Array.FindIndex(_allBaseComponentType, m=>m == _script_name_property.stringValue);
@@ -112,7 +109,7 @@ public class ComponentFixture1Editor : Editor
             if(string.IsNullOrEmpty(_script_name_property.stringValue))
             {
                 EditorGUI.EndChangeCheck();
-                return;
+                return false;
             }
         }
         else
@@ -120,6 +117,12 @@ public class ComponentFixture1Editor : Editor
             DrawScriptTitle();
         }
 
+        return true;
+    }
+
+    
+    private void DrawFields()
+    {
         for(int i = 0; i < _recordArray.arraySize; i++)
         {
             var item = _recordArray.GetArrayElementAtIndex(i);
@@ -183,7 +186,10 @@ public class ComponentFixture1Editor : Editor
                 }
             }
         }
+    }
 
+    private void DrawAddField()
+    {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("新增字段：");
         _newFiledName = EditorGUILayout.TextField(_newFiledName);
@@ -213,18 +219,39 @@ public class ComponentFixture1Editor : Editor
             }
         }
         EditorGUILayout.EndHorizontal();        
+    }
 
+    public override void OnInspectorGUI()
+    {
+        serializedObject.Update();
+
+        EditorGUI.BeginChangeCheck();
+
+        if(!DrawTitle())
+        {
+            return;
+        }
+
+        DrawFields();
+
+        DrawAddField();
+        
+        DrawSave();
+       
+        if (EditorGUI.EndChangeCheck())
+        {
+            serializedObject.ApplyModifiedProperties();
+        }
+    }
+
+    private void DrawSave()
+    {
         if(HasThingSave())
         {
             if(GUILayout.Button("save cs file"))
             {
                 CodeGenerator.SaveCSFile(_script_name_property, _recordArray);
             }
-        }
-       
-        if (EditorGUI.EndChangeCheck())
-        {
-            serializedObject.ApplyModifiedProperties();
         }
     }
 
