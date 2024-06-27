@@ -7,16 +7,10 @@ using System.Linq;
 using System.Reflection;
 using System.IO;
 
-public class FiledInfo
-{
-    public string filedName;
-    public Type type;
-}
 
 [CustomEditor(typeof(ComponentFixture1), true)]
 public class ComponentFixture1Editor : Editor
 {
-    static Dictionary<string, Type> _allTypeByString = new Dictionary<string, Type>();
     private ComponentFixture1 _target_object;
     SerializedProperty _script_name_property;
     SerializedProperty _recordArray;
@@ -128,11 +122,16 @@ public class ComponentFixture1Editor : Editor
             var item = _recordArray.GetArrayElementAtIndex(i);
 
             EditorGUILayout.BeginHorizontal();
+            if(item.FindPropertyRelative("Object").objectReferenceValue == null)
+            {
+                GUI.color = Color.yellow;
+            }
+
             var filedName = item.FindPropertyRelative("filedName").stringValue;
             var isNew = !_allFileFieldTypes.ContainsKey(filedName);
             if(isNew)
             {
-                GUI.color = Color.yellow;
+                GUI.color = Color.green;
             }
 
             var match = CheckFieldMatch(filedName, item.FindPropertyRelative("Object").objectReferenceValue);
@@ -147,7 +146,7 @@ public class ComponentFixture1Editor : Editor
                 type = _allFileFieldTypes[filedName];
             }
 
-            item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(filedName, 
+            item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(filedName), 
                                                         item.FindPropertyRelative("Object").objectReferenceValue, type, true);
             GUI.color = Color.white;
 
@@ -169,7 +168,18 @@ public class ComponentFixture1Editor : Editor
                 {
                     folderFiledName = filedName;
 
-                    var components = (obj as Component).GetComponents<Component>();
+                    List<Object> components = new List<Object>();
+                    if(obj is GameObject o)
+                    {
+                        components.Add(o);
+                        components.AddRange(o.GetComponents<Component>());
+                    }
+                    else
+                    {
+                        components.AddRange((obj as Component).GetComponents<Component>());
+                        components.Insert(0, (obj as Component).gameObject);
+                    }
+
                     foreach(var x in components)
                     {
                         if(GUILayout.Button($"{x.GetType()}"))
@@ -295,7 +305,7 @@ public class ComponentFixture1Editor : Editor
                 return false;
             }
 
-            if(!_allFileFieldTypes.TryGetValue(filedName, out var type) || type != value.GetType())
+            if(!_allFileFieldTypes.TryGetValue(filedName, out var type) || (value != null && type != value.GetType()))
             {
                 return true;
             }
@@ -436,5 +446,16 @@ public class ComponentFixture1Editor : Editor
         }
         
         return null;
+    }
+
+    private string GetDisplayName(string stringValue)
+    {
+        string x = "Object";
+        if(_allFileFieldTypes.TryGetValue(stringValue, out var type))
+        {
+            x = type.Name;
+        }
+
+        return $"【{stringValue}】-{x}";
     }
 }

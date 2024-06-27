@@ -22,9 +22,9 @@ public class CodeGenerator
                 var obj = item.FindPropertyRelative("Object").objectReferenceValue;
 
                 if(obj == null) continue;
-                var fieldType = GetSaveType(obj as Component);
+                var fieldType = GetSaveType(obj );
 
-                codeGeneratorBuilder.AppendLine($"[SerializeField] {fieldType} {filedName}; ");
+                codeGeneratorBuilder.AppendLine($"[SerializeField] public {fieldType} {filedName}; ");
             }
 
             codeGeneratorBuilder.NewLine();
@@ -38,7 +38,7 @@ public class CodeGenerator
                         var obj = item.FindPropertyRelative("Object").objectReferenceValue;
 
                         if(obj == null) continue;
-                        var fieldType = GetSaveType(obj as Component);
+                        var fieldType = GetSaveType(obj);
 
                         if(obj is ComponentFixture1)
                         {
@@ -57,6 +57,10 @@ public class CodeGenerator
                                 codeGeneratorBuilder.AppendLine($"for(int i = 0; i < allCompnents.Length; i++) {filedName}[i] = allCompnents[i].CreateScript() as {GetSaveType(arrayFixture.components[0])}; ");
                             }
                         }
+                        else if(obj is ArrayContainerMono)
+                        {
+                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerMono)(oneFiledRecord.Object)).gameObjects; ");
+                        }
                         else
                         {
                             codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType}; ");
@@ -73,9 +77,10 @@ public class CodeGenerator
     }
 
     
-    public static string GetSaveType(Component c)
+    public static string GetSaveType(Object o)
     {
-        var type = c.GetType();
+        var c = o as Component;
+        var type = o.GetType();
         if(type == typeof(ComponentFixture1))
         {
             var x = c.GetComponent<ComponentFixture1>().componentType;

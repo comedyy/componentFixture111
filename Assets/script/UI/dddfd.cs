@@ -1,12 +1,13 @@
 using UnityEngine;
 public partial class dddfd : BaseComponentScript
 {
-	[SerializeField] UnityEngine.RectTransform dsfsdf; 
-	[SerializeField] UnityEngine.Camera ccc; 
-	[SerializeField] UnityEngine.Transform aaa; 
-	[SerializeField] LoginViewDataItem ttttt; 
-	[SerializeField] UnityEngine.RectTransform[] componentArray; 
-	[SerializeField] LoginViewDataItem[] arrayFixture; 
+	[SerializeField] public UnityEngine.RectTransform dsfsdf; 
+	[SerializeField] public UnityEngine.Camera ccc; 
+	[SerializeField] public UnityEngine.Transform aaa; 
+	[SerializeField] public LoginViewDataItem ttttt; 
+	[SerializeField] public UnityEngine.RectTransform[] componentArray; 
+	[SerializeField] public LoginViewDataItem[] arrayFixture; 
+	[SerializeField] public UnityEngine.RectTransform ffdfdfdf; 
 
 	protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords)
 	{
@@ -23,6 +24,7 @@ public partial class dddfd : BaseComponentScript
 				arrayFixture = new LoginViewDataItem[allCompnents.Length];
 				for(int i = 0; i < allCompnents.Length; i++) arrayFixture[i] = allCompnents[i].CreateScript() as LoginViewDataItem; 
 			}
+			if(oneFiledRecord.filedName == "ffdfdfdf") ffdfdfdf = oneFiledRecord.Object as UnityEngine.RectTransform; 
 		}
 		return true;
 	}
