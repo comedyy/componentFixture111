@@ -12,7 +12,7 @@ public class OneFiledRecord
     public UnityEngine.Object Object;
 }
 
-public class ComponentFixture1 : MonoBehaviour
+public class ComponentFixture1 : MonoBehaviour, ICheckError
 {
     public string componentType;
     public OneFiledRecord[] records;
@@ -52,5 +52,10 @@ public class ComponentFixture1 : MonoBehaviour
     void OnDestroy()
     {
         baseComponentScript?.OnDisable();
+    }
+
+    public bool HasError()
+    {
+        // TODO:
     }
 }

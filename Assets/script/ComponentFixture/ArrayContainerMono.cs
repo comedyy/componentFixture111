@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArrayContainerMono : MonoBehaviour {
+public class ArrayContainerMono : MonoBehaviour, ICheckError {
     [SerializeField]
     public GameObject[] gameObjects;
 
@@ -46,5 +46,11 @@ public class ArrayContainerMono : MonoBehaviour {
             gameObjects[i] = transform.GetChild(i).gameObject;
         }
     }
+
+    public bool HasError()
+    {
+        return gameObjects != null && gameObjects.Length > 0;
+    }
+
 #endif
 }
