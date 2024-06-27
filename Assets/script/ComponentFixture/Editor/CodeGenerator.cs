@@ -19,7 +19,11 @@ public class CodeGenerator
             {
                 var item = _recordArray.GetArrayElementAtIndex(i);
                 var filedName = item.FindPropertyRelative("filedName").stringValue;
-                var fieldType = item.FindPropertyRelative("filedType").stringValue;
+                var obj = item.FindPropertyRelative("Object").objectReferenceValue;
+
+                if(obj == null) continue;
+                var fieldType = ComponentFixture1Editor.GetSaveType(obj as Component);
+
                 codeGeneratorBuilder.AppendLine($"[SerializeField] {fieldType.Split(',')[0]} {filedName}; ");
             }
 
@@ -31,8 +35,10 @@ public class CodeGenerator
                     {
                         var item = _recordArray.GetArrayElementAtIndex(i);
                         var filedName = item.FindPropertyRelative("filedName").stringValue;
-                        var fieldType = item.FindPropertyRelative("filedType").stringValue;
                         var obj = item.FindPropertyRelative("Object").objectReferenceValue;
+
+                        if(obj == null) continue;
+                        var fieldType = ComponentFixture1Editor.GetSaveType(obj as Component);
 
                         if(obj is ComponentFixture1)
                         {
