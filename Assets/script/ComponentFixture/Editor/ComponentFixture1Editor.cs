@@ -429,12 +429,12 @@ public class ComponentFixture1Editor : Editor
         return true;
     }
 
-    static string GetSaveTypeName(Type type)
+    public static string GetSaveTypeName(Type type)
     {
         return type.FullName + ", " + type.Assembly.GetName().Name;
     }
 
-    string GetSaveType(Component c)
+    public static string GetSaveType(Component c)
     {
         var type = c.GetType();
         if(type == typeof(ComponentFixture1))

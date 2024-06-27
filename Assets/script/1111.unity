@@ -197,6 +197,7 @@ GameObject:
   m_Component:
   - component: {fileID: 112966676}
   - component: {fileID: 112966675}
+  - component: {fileID: 112966677}
   m_Layer: 5
   m_Name: GameObject
   m_TagString: Untagged
@@ -242,6 +243,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &112966677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 112966674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb788c50ad55e454da588497e785daa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  components:
+  - {fileID: 1934091850}
+  - {fileID: 229711191}
+  - {fileID: 2040328850}
+  - {fileID: 0}
+  componentType: ComponentFixture1, Assembly-CSharp
 --- !u!1 &229711189
 GameObject:
   m_ObjectHideFlags: 0
@@ -1094,6 +1113,12 @@ MonoBehaviour:
   - filedName: zzz
     Object: {fileID: 784890512}
     filedType: UnityEngine.Component, UnityEngine.CoreModule
+  - filedName: ffff
+    Object: {fileID: 784890511}
+    filedType: UnityEngine.Light, UnityEngine.CoreModule
+  - filedName: fffddsd
+    Object: {fileID: 784890513}
+    filedType: LoginViewData, Assembly-CSharp
 --- !u!1 &1934091848
 GameObject:
   m_ObjectHideFlags: 0
