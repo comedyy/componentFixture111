@@ -22,9 +22,9 @@ public class CodeGenerator
                 var obj = item.FindPropertyRelative("Object").objectReferenceValue;
 
                 if(obj == null) continue;
-                var fieldType = ComponentFixture1Editor.GetSaveType(obj as Component);
+                var fieldType = GetSaveType(obj as Component);
 
-                codeGeneratorBuilder.AppendLine($"[SerializeField] {fieldType.Split(',')[0]} {filedName}; ");
+                codeGeneratorBuilder.AppendLine($"[SerializeField] {fieldType} {filedName}; ");
             }
 
             codeGeneratorBuilder.NewLine();
@@ -38,15 +38,15 @@ public class CodeGenerator
                         var obj = item.FindPropertyRelative("Object").objectReferenceValue;
 
                         if(obj == null) continue;
-                        var fieldType = ComponentFixture1Editor.GetSaveType(obj as Component);
+                        var fieldType = GetSaveType(obj as Component);
 
                         if(obj is ComponentFixture1)
                         {
-                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType.Split(',')[0]}; ");
+                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType}; ");
                         }
                         else
                         {
-                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType.Split(',')[0]}; ");
+                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType}; ");
                         }
                     }
                 }
@@ -57,5 +57,24 @@ public class CodeGenerator
 
         codeGeneratorBuilder.Save();
         AssetDatabase.Refresh();
+    }
+
+    
+    public static string GetSaveType(Component c)
+    {
+        var type = c.GetType();
+        if(type == typeof(ComponentFixture1))
+        {
+            var x = c.GetComponent<ComponentFixture1>().componentType;
+            return x.Split(',')[0];
+        }
+        else if(c is ArrayContainerMono)
+        {
+            return typeof(GameObject[]).FullName;
+        }
+        else
+        {
+            return type.FullName;
+        }
     }
 }

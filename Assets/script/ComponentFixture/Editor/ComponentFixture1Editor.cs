@@ -341,37 +341,6 @@ public class ComponentFixture1Editor : Editor
         }
     }
 
-
-    // private string GetDisplayName(string stringValue)
-    // {
-    //     string x = "Object";
-    //     if(_allFileFieldTypes.TryGetValue(stringValue, out var type))
-    //     {
-    //         x = type.Name;
-    //     }
-
-    //     return $"【{stringValue}】-{x}";
-    // }
-
-
-    private Type GetTypeByStr(string stringValue)
-    {
-        if(_allTypeByString.TryGetValue(stringValue, out var type))
-        {
-            return type;
-        }
-
-        type = Type.GetType(stringValue);
-        if(type == null)
-        {
-            type = typeof(Object);
-        }
-
-        _allTypeByString.Add(stringValue, type);
-
-        return type;
-    }
-
     private bool GetTypeStruct(string name, bool validateType)
     {
         if (string.IsNullOrEmpty(name)) return false;
@@ -402,10 +371,9 @@ public class ComponentFixture1Editor : Editor
                 var fieldMonoType = GetMonoType(fieldInfo.FieldType);
                 if(fieldMonoType == null)
                 {
+                    Debug.LogError($"found a filed no mono type, [{fieldInfo.Name}] type:[{fieldInfo.FieldType}]");
                     continue;
                 }
-
-                var fieldMonoTypeStr = GetSaveTypeName(fieldMonoType);
 
                 _allFileFieldTypes.Add(fieldInfo.Name, fieldInfo.FieldType);
                 if(findIndex < 0)
@@ -414,45 +382,21 @@ public class ComponentFixture1Editor : Editor
                     _recordArray.InsertArrayElementAtIndex(lastIndex);
                     var obj = _recordArray.GetArrayElementAtIndex(lastIndex);
                     obj.FindPropertyRelative("filedName").stringValue = fieldInfo.Name;
-                    obj.FindPropertyRelative("filedType").stringValue = fieldMonoTypeStr;
                     obj.FindPropertyRelative("Object").objectReferenceValue = null;
                 }
             }
         }
 
-        // _recordArray.arraySize = _info.typeComponents.Count;
-        // for(int i = 0; i < _info.typeComponents.Count; i++)
-        // {
-        //     var obj = _recordArray.GetArrayElementAtIndex(i);
-        //     obj.FindPropertyRelative("filedName").stringValue = _info.typeComponents[i].field_name;
-        //     obj.FindPropertyRelative("Object").objectReferenceValue = _info.typeComponents[i].Object;
-        // }
-
         return true;
     }
 
+    // 返回一个实例化的数据的Type全称
     public static string GetSaveTypeName(Type type)
     {
         return type.FullName + ", " + type.Assembly.GetName().Name;
     }
 
-    public static string GetSaveType(Component c)
-    {
-        var type = c.GetType();
-        if(type == typeof(ComponentFixture1))
-        {
-            return c.GetComponent<ComponentFixture1>().componentType;
-        }
-        else if(c is ArrayContainerMono)
-        {
-            return GetSaveTypeName(typeof(GameObject[]));
-        }
-        else
-        {
-            return GetSaveTypeName(type);
-        }
-    }
-
+    // 通过数据对象，反向推测inspector类型。
     Type GetMonoType(Type type)
     {
         if(type.IsArray)
