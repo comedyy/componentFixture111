@@ -143,7 +143,7 @@ public class ComponentFixture1Editor : Editor
             Type type = typeof(Component);
             if(_allFileFieldTypes.ContainsKey(filedName)) 
             {
-                type = _allFileFieldTypes[filedName];
+                type = GetMonoType(_allFileFieldTypes[filedName]);
             }
 
             item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(filedName), 

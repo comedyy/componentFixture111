@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: 112966676}
   - component: {fileID: 112966675}
   - component: {fileID: 112966677}
+  - component: {fileID: 112966678}
   m_Layer: 5
   m_Name: GameObject
   m_TagString: Untagged
@@ -256,11 +257,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   components:
+  - {fileID: 1934091849}
+  - {fileID: 229711190}
+  - {fileID: 2040328849}
+  componentType: UnityEngine.RectTransform, UnityEngine.CoreModule
+--- !u!114 &112966678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 112966674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab7e33dfebe71b74c8e03f2e197d314a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  components:
   - {fileID: 1934091850}
   - {fileID: 229711191}
   - {fileID: 2040328850}
-  - {fileID: 0}
-  componentType: ComponentFixture1, Assembly-CSharp
 --- !u!1 &229711189
 GameObject:
   m_ObjectHideFlags: 0
@@ -313,10 +329,10 @@ MonoBehaviour:
   records:
   - filedName: img
     Object: {fileID: 232892847}
-    filedType: UnityEngine.UI.Image, UnityEngine.UI
   - filedName: d111
-    Object: {fileID: 0}
-    filedType: ComponentFixture1, Assembly-CSharp
+    Object: {fileID: 5743778}
+  - filedName: sssdf
+    Object: {fileID: 5743779}
 --- !u!1 &232892846
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,16 +594,12 @@ MonoBehaviour:
   records:
   - filedName: arrayContainer
     Object: {fileID: 1330651646}
-    filedType: ArrayContainerMono, Assembly-CSharp
   - filedName: loginViewData
-    Object: {fileID: 1504551155}
-    filedType: ComponentFixture1, Assembly-CSharp
+    Object: {fileID: 1934091850}
   - filedName: loginViewDatas
     Object: {fileID: 112966675}
-    filedType: ArrayContainerMono, Assembly-CSharp
   - filedName: hides
     Object: {fileID: 112966675}
-    filedType: ArrayContainerMono, Assembly-CSharp
 --- !u!1 &1092734738
 GameObject:
   m_ObjectHideFlags: 0
@@ -914,14 +926,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94e7e1723b23d7c4083f1c9dc8624879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  componentType: LoginViewDataItem, Assembly-CSharp
+  componentType: fffffffffff,Assembly-CSharp
   records:
-  - filedName: img
-    Object: {fileID: 232892847}
-    filedType: UnityEngine.UI.Image, UnityEngine.UI
-  - filedName: d111
-    Object: {fileID: 0}
-    filedType: ComponentFixture1, Assembly-CSharp
+  - filedName: ddddddddddd
+    Object: {fileID: 1330651646}
+  - filedName: tttt
+    Object: {fileID: 112966674}
 --- !u!1 &1516048240
 GameObject:
   m_ObjectHideFlags: 0
@@ -1100,25 +1110,18 @@ MonoBehaviour:
   records:
   - filedName: dsfsdf
     Object: {fileID: 1516048241}
-    filedType: UnityEngine.Transform, UnityEngine.CoreModule
   - filedName: ccc
     Object: {fileID: 1735983813}
-    filedType: UnityEngine.Camera, UnityEngine.CoreModule
   - filedName: aaa
     Object: {fileID: 5743779}
-    filedType: UnityEngine.Transform, UnityEngine.CoreModule
   - filedName: ttttt
-    Object: {fileID: 1504551155}
-    filedType: LoginViewDataItem, Assembly-CSharp
-  - filedName: zzz
-    Object: {fileID: 784890512}
-    filedType: UnityEngine.Component, UnityEngine.CoreModule
-  - filedName: ffff
-    Object: {fileID: 784890511}
-    filedType: UnityEngine.Light, UnityEngine.CoreModule
-  - filedName: fffddsd
-    Object: {fileID: 784890513}
-    filedType: LoginViewData, Assembly-CSharp
+    Object: {fileID: 1934091850}
+  - filedName: componentArray
+    Object: {fileID: 112966677}
+  - filedName: arrayFixture
+    Object: {fileID: 112966678}
+  - filedName: ffdfdfdf
+    Object: {fileID: 112966676}
 --- !u!1 &1934091848
 GameObject:
   m_ObjectHideFlags: 0
@@ -1171,10 +1174,10 @@ MonoBehaviour:
   records:
   - filedName: img
     Object: {fileID: 232892847}
-    filedType: UnityEngine.UI.Image, UnityEngine.UI
   - filedName: d111
-    Object: {fileID: 0}
-    filedType: ComponentFixture1, Assembly-CSharp
+    Object: {fileID: 5743778}
+  - filedName: sssdf
+    Object: {fileID: 5743779}
 --- !u!1 &2040328848
 GameObject:
   m_ObjectHideFlags: 0
@@ -1227,7 +1230,7 @@ MonoBehaviour:
   records:
   - filedName: img
     Object: {fileID: 232892847}
-    filedType: UnityEngine.UI.Image, UnityEngine.UI
   - filedName: d111
-    Object: {fileID: 0}
-    filedType: ComponentFixture1, Assembly-CSharp
+    Object: {fileID: 5743778}
+  - filedName: sssdf
+    Object: {fileID: 5743779}
