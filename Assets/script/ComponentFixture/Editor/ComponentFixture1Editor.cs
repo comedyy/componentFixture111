@@ -20,7 +20,7 @@ public class ComponentFixture1Editor : Editor
     private ComponentFixture1 _target_object;
     SerializedProperty _script_name_property;
     SerializedProperty _recordArray;
-    Dictionary<string, Type> _allDataFields = new Dictionary<string, Type>();
+    Dictionary<string, Type> _allFileFieldTypes = new Dictionary<string, Type>(); // cs文件中的field类型
     string _newFiledName = "";
     string _errorMsg = "";
     string folderFiledName = "";
@@ -126,7 +126,7 @@ public class ComponentFixture1Editor : Editor
 
             EditorGUILayout.BeginHorizontal();
             var filedName = item.FindPropertyRelative("filedName").stringValue;
-            var isNew = !_allDataFields.ContainsKey(filedName);
+            var isNew = !_allFileFieldTypes.ContainsKey(filedName);
             if(isNew)
             {
                 GUI.color = Color.yellow;
@@ -138,9 +138,14 @@ public class ComponentFixture1Editor : Editor
                 GUI.color = Color.red;
             }
 
-            item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(GetDisplayName(item.FindPropertyRelative("filedName").stringValue), 
-                                                        item.FindPropertyRelative("Object").objectReferenceValue,
-                                                        GetTypeByStr(item.FindPropertyRelative("filedType").stringValue), true);
+            Type type = typeof(Component);
+            if(_allFileFieldTypes.ContainsKey(filedName)) 
+            {
+                type = _allFileFieldTypes[filedName];
+            }
+
+            item.FindPropertyRelative("Object").objectReferenceValue = EditorGUILayout.ObjectField(filedName, 
+                                                        item.FindPropertyRelative("Object").objectReferenceValue, type, true);
             GUI.color = Color.white;
 
            
@@ -167,7 +172,6 @@ public class ComponentFixture1Editor : Editor
                         if(GUILayout.Button($"{x.GetType()}"))
                         {
                             item.FindPropertyRelative("Object").objectReferenceValue = x;
-                            item.FindPropertyRelative("filedType").stringValue = GetSaveType(x);
                             folderFiledName = "";
                             break;
                         }
@@ -205,7 +209,6 @@ public class ComponentFixture1Editor : Editor
                 _recordArray.arraySize = _recordArray.arraySize + 1;
                 var item = _recordArray.GetArrayElementAtIndex(_recordArray.arraySize - 1);
                 item.FindPropertyRelative("filedName").stringValue = _newFiledName;
-                item.FindPropertyRelative("filedType").stringValue = GetSaveTypeName(typeof(Component));
                 _newFiledName = "";
             }
         }
@@ -257,22 +260,21 @@ public class ComponentFixture1Editor : Editor
         {
             var item = _recordArray.GetArrayElementAtIndex(i);
             var filedName = item.FindPropertyRelative("filedName").stringValue;
-            var fieldType = item.FindPropertyRelative("filedType").stringValue;
 
-            var isNewField = !_allDataFields.ContainsKey(filedName);
+            var isNewField = !_allFileFieldTypes.ContainsKey(filedName);
             var value = item.FindPropertyRelative("Object").objectReferenceValue;
             if(value == null && isNewField)
             {
                 return false;
             }
 
-            if(!_allDataFields.TryGetValue(filedName, out var type) || GetSaveTypeName(type) != fieldType)
+            if(!_allFileFieldTypes.TryGetValue(filedName, out var type) || type != value.GetType())
             {
                 return true;
             }
         }
 
-        var toutalCount = _allDataFields.Count;
+        var toutalCount = _allFileFieldTypes.Count;
         if(toutalCount != _recordArray.arraySize)
         {
             return true;
@@ -283,7 +285,7 @@ public class ComponentFixture1Editor : Editor
 
     private bool CheckFieldMatch(string stringValue, Object objectReferenceValue)
     {
-        if(!_allDataFields.TryGetValue(stringValue, out var type))
+        if(!_allFileFieldTypes.TryGetValue(stringValue, out var type))
         {
             return true;
         }
@@ -340,16 +342,16 @@ public class ComponentFixture1Editor : Editor
     }
 
 
-    private string GetDisplayName(string stringValue)
-    {
-        string x = "Object";
-        if(_allDataFields.TryGetValue(stringValue, out var type))
-        {
-            x = type.Name;
-        }
+    // private string GetDisplayName(string stringValue)
+    // {
+    //     string x = "Object";
+    //     if(_allFileFieldTypes.TryGetValue(stringValue, out var type))
+    //     {
+    //         x = type.Name;
+    //     }
 
-        return $"【{stringValue}】-{x}";
-    }
+    //     return $"【{stringValue}】-{x}";
+    // }
 
 
     private Type GetTypeByStr(string stringValue)
@@ -405,7 +407,7 @@ public class ComponentFixture1Editor : Editor
 
                 var fieldMonoTypeStr = GetSaveTypeName(fieldMonoType);
 
-                _allDataFields.Add(fieldInfo.Name, fieldInfo.FieldType);
+                _allFileFieldTypes.Add(fieldInfo.Name, fieldInfo.FieldType);
                 if(findIndex < 0)
                 {
                     var lastIndex = _recordArray.arraySize;

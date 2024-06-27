@@ -7,6 +7,7 @@ public partial class dddfd : BaseComponentScript
 	[SerializeField] LoginViewDataItem ttttt; 
 	[SerializeField] UnityEngine.Transform zzz; 
 	[SerializeField] UnityEngine.Light ffff; 
+	[SerializeField] LoginViewDataItem fgfg; 
 
 	protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords)
 	{
@@ -18,6 +19,7 @@ public partial class dddfd : BaseComponentScript
 			if(oneFiledRecord.filedName == "ttttt") ttttt = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as LoginViewDataItem; 
 			if(oneFiledRecord.filedName == "zzz") zzz = oneFiledRecord.Object as UnityEngine.Transform; 
 			if(oneFiledRecord.filedName == "ffff") ffff = oneFiledRecord.Object as UnityEngine.Light; 
+			if(oneFiledRecord.filedName == "fgfg") fgfg = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as LoginViewDataItem; 
 		}
 		return true;
 	}
