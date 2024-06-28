@@ -10,7 +10,7 @@ public class CodeGenerator
     {
         var fileName = _script_name_property.stringValue.Split(',')[0];
 
-        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(Application.dataPath + $"/script/UI/{fileName}.cs");
+        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(Application.dataPath + $"/script/UI/{fileName}.View.cs");
 
         codeGeneratorBuilder.AppendLine("using UnityEngine;");
         using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
@@ -73,10 +73,23 @@ public class CodeGenerator
         }
 
         codeGeneratorBuilder.Save();
+
+        // save custom file
+        SaveCustomCSFile(_script_name_property, _recordArray);
+
         AssetDatabase.Refresh();
     }
 
-    
+    private static void SaveCustomCSFile(SerializedProperty script_name_property, SerializedProperty recordArray)
+    {
+        var fileName = script_name_property.stringValue.Split(',')[0];
+        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(Application.dataPath + $"/script/UI/{fileName}.cs");
+        using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
+        {
+        }
+        codeGeneratorBuilder.Save();
+    }
+
     public static string GetSaveType(Object o)
     {
         var c = o as Component;
