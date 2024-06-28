@@ -34,8 +34,8 @@ public class HierachyCheckError
         var x = instance.GetComponent<ICheckError>();
         if(x != null && x.HasError())
         {
-            var xMax = selectionRect.xMax - 50;
-            var rectNew = new Rect(xMax, selectionRect.y, 50, selectionRect.height - 2);
+            var xMax = selectionRect.xMax - 16;
+            var rectNew = new Rect(xMax, selectionRect.y, 16, selectionRect.height - 2);
             EditorGUI.DrawRect (rectNew, Color.red);
         }
     }
