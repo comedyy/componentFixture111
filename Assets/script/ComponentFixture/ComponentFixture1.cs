@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -57,5 +58,6 @@ public class ComponentFixture1 : MonoBehaviour, ICheckError
     public bool HasError()
     {
         // TODO:
+        return records.Any(m=>m.Object == null);
     }
 }

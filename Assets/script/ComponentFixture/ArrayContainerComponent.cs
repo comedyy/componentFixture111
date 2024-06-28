@@ -14,6 +14,6 @@ public class ArrayContainerComponent : MonoBehaviour, ICheckError {
     {
         if(string.IsNullOrEmpty(componentType)) return true;
 
-        return components != null && components.Length > 0;
+        return components == null || components.Length == 0;
     }
 }

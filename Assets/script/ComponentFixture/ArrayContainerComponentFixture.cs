@@ -11,6 +11,6 @@ public class ArrayContainerComponentFixture : MonoBehaviour, ICheckError
 
     public bool HasError()
     {
-        return components != null && components.Length > 0;
+        return components == null || components.Length == 0;
     }
 }

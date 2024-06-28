@@ -49,7 +49,7 @@ public class ArrayContainerMono : MonoBehaviour, ICheckError {
 
     public bool HasError()
     {
-        return gameObjects != null && gameObjects.Length > 0;
+        return gameObjects == null || gameObjects.Length == 0;
     }
 
 #endif
