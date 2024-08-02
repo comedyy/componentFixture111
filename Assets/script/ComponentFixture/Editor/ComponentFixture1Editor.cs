@@ -273,7 +273,8 @@ public class ComponentFixture1Editor : Editor
         {
             GUI.enabled = false;
             var fileName = _script_name_property.stringValue.Split(',')[0];
-            var monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>($"Assets/script/UI/{fileName}.cs");
+            var monoScript = AssetDatabase.FindAssets($"t:MonoScript {fileName}").Select(m=>AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(m))).FirstOrDefault();
+            // var monoScript = AssetDatabase.LoadAssetAtPath<MonoScript>($"Assets/script/UI/{fileName}.cs");
             EditorGUILayout.ObjectField("", monoScript, typeof(MonoScript), false);
             GUI.enabled = true;
         }
@@ -332,7 +333,7 @@ public class ComponentFixture1Editor : Editor
             return true;
         }
 
-        if(objectReferenceValue is ArrayContainerMono arrayMono)
+        if(objectReferenceValue is ArrayContainerGameObject arrayMono)
         {
             return true;
         }
@@ -429,7 +430,7 @@ public class ComponentFixture1Editor : Editor
             }
             else if(monoSubType == typeof(GameObject))
             {
-                return typeof(ArrayContainerMono);
+                return typeof(ArrayContainerGameObject);
             }
             else
             {

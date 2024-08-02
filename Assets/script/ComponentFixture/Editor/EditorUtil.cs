@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class EditorUtil
 {   
-    [MenuItem("tools/xxx")]
+    // [MenuItem("tools/xxx")]
     public static void Open()
     {
         OpenScriptOfType(typeof(LoginViewData));

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ArrayContainerMono : MonoBehaviour, ICheckError {
+public class ArrayContainerGameObject : MonoBehaviour, ICheckError {
     [SerializeField]
     public GameObject[] gameObjects;
 

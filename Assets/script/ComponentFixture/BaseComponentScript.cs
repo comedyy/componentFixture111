@@ -28,7 +28,7 @@ public class BaseComponentScript
             if(fieldType.IsArray)
             {
                 var elementType = fieldType.GetElementType();
-                var arrayContainer = (ArrayContainerMono)fieldRecord.Object;
+                var arrayContainer = (ArrayContainerGameObject)fieldRecord.Object;
                 Array array = Array.CreateInstance(elementType, arrayContainer.Length);
                 for(int i = 0; i < arrayContainer.Length; i++)
                 {

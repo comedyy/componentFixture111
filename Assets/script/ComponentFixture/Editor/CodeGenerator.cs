@@ -57,7 +57,7 @@ public class CodeGenerator
                                 codeGeneratorBuilder.AppendLine($"for(int i = 0; i < allCompnents.Length; i++) {filedName}[i] = allCompnents[i].CreateScript() as {GetSaveType(arrayFixture.components[0])}; ");
                             }
                         }
-                        else if(obj is ArrayContainerMono)
+                        else if(obj is ArrayContainerGameObject)
                         {
                             codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerMono)(oneFiledRecord.Object)).gameObjects; ");
                         }
@@ -113,7 +113,7 @@ public class CodeGenerator
             var y = x.Split(',')[0];
             return y + "[]";
         }
-        else if(c is ArrayContainerMono)
+        else if(c is ArrayContainerGameObject)
         {
             return typeof(GameObject[]).FullName;
         }
