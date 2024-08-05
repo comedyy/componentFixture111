@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 public partial class MainViewItem_Convert : BaseComponentScript
 {
 	[SerializeField] public UnityEngine.UI.Text _text; 

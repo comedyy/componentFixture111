@@ -11,6 +11,8 @@ public class MainView : BaseView
 
     public MainViewItem mainViewItem;
     public MainViewItem[] mainViewItemList;
+    public GameObject[] allObjects;
+    public Text[] texts;
 
     protected override void OnOpenView(object param)
     {

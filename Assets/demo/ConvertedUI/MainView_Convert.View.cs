@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 public partial class MainView_Convert : BaseComponentScript
 {
 	[SerializeField] public UnityEngine.UI.Button button1; 
@@ -6,6 +7,8 @@ public partial class MainView_Convert : BaseComponentScript
 	[SerializeField] public UnityEngine.UI.Text _text; 
 	[SerializeField] public MainViewItem_Convert mainViewItem; 
 	[SerializeField] public MainViewItem_Convert[] mainViewItemList; 
+	[SerializeField] public UnityEngine.GameObject[] allObjects; 
+	[SerializeField] public UnityEngine.UI.Text[] texts; 
 	protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords)
 	{
 		foreach(var oneFiledRecord in oneFiledRecords)
@@ -16,10 +19,10 @@ public partial class MainView_Convert : BaseComponentScript
 			if(oneFiledRecord.filedName == "mainViewItem") mainViewItem = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as MainViewItem_Convert; 
 			if(oneFiledRecord.filedName == "mainViewItemList") 
 			{
-				var allCompnents = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components;
-				mainViewItemList = new MainViewItem_Convert[allCompnents.Length];
-				for(int i = 0; i < allCompnents.Length; i++) mainViewItemList[i] = allCompnents[i].CreateScript() as MainViewItem_Convert; 
+				mainViewItemList = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components.Select(m=>m.CreateScript() as MainViewItem_Convert).ToArray();
 			}
+			if(oneFiledRecord.filedName == "allObjects") allObjects = ((ArrayContainerGameObject)oneFiledRecord.Object).gameObjects; 
+			if(oneFiledRecord.filedName == "texts") texts = ((ArrayContainerComponent)oneFiledRecord.Object).components.Select(m=>m as UnityEngine.UI.Text).ToArray(); 
 		}
 		return true;
 	}

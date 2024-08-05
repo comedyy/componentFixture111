@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
@@ -155,6 +156,7 @@ public class ConvertMonoToComponentFixture {
         CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(path);
 
         codeGeneratorBuilder.AppendLine("using UnityEngine;");
+        codeGeneratorBuilder.AppendLine("using System.Linq;");
         using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
         {
             for(int i = 0; i < list.Count; i++)
@@ -181,9 +183,7 @@ public class ConvertMonoToComponentFixture {
                                 var elementType = GetSaveType(type1.GetElementType(), out var _);
                                 using(codeGeneratorBuilder.StartFold($"if(oneFiledRecord.filedName == \"{filedName}\") "))
                                 {
-                                    codeGeneratorBuilder.AppendLine($"var allCompnents = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components;");
-                                    codeGeneratorBuilder.AppendLine($"{filedName} = new {elementType}[allCompnents.Length];");
-                                    codeGeneratorBuilder.AppendLine($"for(int i = 0; i < allCompnents.Length; i++) {filedName}[i] = allCompnents[i].CreateScript() as {elementType}; ");
+                                    codeGeneratorBuilder.AppendLine($"{filedName} = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components.Select(m=>m.CreateScript() as {elementType}).ToArray();");
                                 }
                             }
                             else
@@ -193,13 +193,14 @@ public class ConvertMonoToComponentFixture {
                         }
                         else if(type1.IsArray)
                         {
-                            if(type1.GetElementType() != typeof(GameObject))
+                            var elementType = GetSaveType(type1.GetElementType(), out var _);
+                            if(type1.GetElementType() == typeof(GameObject))
                             {
-                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerMono)(oneFiledRecord.Object)).gameObjects; ");
+                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerGameObject)oneFiledRecord.Object).gameObjects; ");
                             }
                             else
                             {
-                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerComponent)oneFiledRecord.Object).components as {fieldType}; ");
+                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerComponent)oneFiledRecord.Object).components.Select(m=>m as {elementType}).ToArray(); ");
                             }
                         }
                         else
@@ -221,7 +222,10 @@ public class ConvertMonoToComponentFixture {
 
     private static void SaveCustomCSFile(string fileName)
     {
-        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(Application.dataPath + $"/demo/ConvertedUI/{fileName}.Logic.cs");
+        var path = Application.dataPath + $"/demo/ConvertedUI/{fileName}.Logic.cs";
+        if(File.Exists(path)) return;
+
+        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(path);
         codeGeneratorBuilder.AppendLine("using UnityEngine;");
         using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
         {
