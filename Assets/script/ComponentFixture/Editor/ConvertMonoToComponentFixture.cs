@@ -42,7 +42,7 @@ public class ConvertMonoToComponentFixture {
 
         // 查找对应的类。
         var fileName = baseview.GetType().Name+ "_Convert";
-        var typeName = fileName + ",Assembly-CSharp";
+        var typeName = fileName + ", Assembly-CSharp";
         var type = Type.GetType(typeName);
         if(type == null)
         {
