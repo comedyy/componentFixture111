@@ -38,6 +38,8 @@ public class ConvertMonoToComponentFixture {
 
     private static ComponentFixture1 Assign(MonoBehaviour baseview)
     {
+        if(baseview == null) throw new Exception("Assign found null");
+
         // 查找对应的类。
         var fileName = baseview.GetType().Name+ "_Convert";
         var typeName = fileName + ",Assembly-CSharp";
@@ -66,6 +68,8 @@ public class ConvertMonoToComponentFixture {
             var componentType = list[i].Item2;
             var data = list[i].Item3;
 
+            if(data == null) throw new Exception($"null found {name} {componentType}");
+
             componet.records[i] = new OneFiledRecord(){filedName = name};
             if(componentType.IsArray)
             {
@@ -79,6 +83,7 @@ public class ConvertMonoToComponentFixture {
                     var parenetNode = monoBehaviour.transform.parent;
                     var array = parenetNode.gameObject.AddComponent<ArrayContainerComponentFixture>();
                     array.components = childArray.Select(m=>Assign(m as MonoBehaviour)).ToArray();
+                    componet.records[i].Object = array;
                 }
                 else if(firstChild is Component component)
                 {
@@ -86,12 +91,14 @@ public class ConvertMonoToComponentFixture {
                     var array = parenetNode.gameObject.AddComponent<ArrayContainerComponent>();
                     array.components = data as UnityEngine.Component[];
                     array.componentType = ComponentFixture1Editor.GetSaveTypeName(childType);
+                    componet.records[i].Object = array;
                 }
                 else if(firstChild is GameObject go)
                 {
                     var parenetNode = go.transform.parent;
                     var array = parenetNode.gameObject.AddComponent<ArrayContainerGameObject>();
                     array.gameObjects = data as UnityEngine.GameObject[];
+                    componet.records[i].Object = array;
                 }
                 else
                 {
@@ -166,7 +173,26 @@ public class ConvertMonoToComponentFixture {
     private static string GetSaveType(Type item2)
     {
         Type t = item2;
-        return t.FullName;
+        var x = t.FullName;
+        
+
+        if(t.Assembly.GetName().Name != "Assembly-CSharp")
+        {
+            return x;
+        }
+
+        if(t.IsSubclassOf(typeof(MonoBehaviour)))
+        {
+            return x + "_Convert";
+        }
+
+        if(t.IsArray)
+        {
+            var tt = t.GetElementType();
+            return tt.FullName + "_Convert[]";
+        }
+
+        return x;
     }
 
     static List<(string, Type, object)> GetAllValues(object view)

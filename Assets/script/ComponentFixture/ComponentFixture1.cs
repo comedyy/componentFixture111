@@ -13,6 +13,7 @@ public class OneFiledRecord
     public UnityEngine.Object Object;
 }
 
+[DisallowMultipleComponent]
 public class ComponentFixture1 : MonoBehaviour, ICheckError
 {
     public string componentType;
