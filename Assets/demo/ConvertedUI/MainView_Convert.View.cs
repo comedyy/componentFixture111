@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 public partial class MainView_Convert : BaseComponentScript
 {
+	public static ViewInfo Info = new ViewInfo(){path = "Mainview"};
 	[SerializeField] public UnityEngine.UI.Button button1; 
 	[SerializeField] public UnityEngine.UI.Button button2; 
 	[SerializeField] public UnityEngine.UI.Text _text; 

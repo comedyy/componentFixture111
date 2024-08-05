@@ -19,7 +19,7 @@ public class ConvertMonoToComponentFixture {
             var xx = x.GetComponent<BaseView>();
             if(xx == null) continue;
 
-            Do1(xx.GetType(), generatedFiles);
+            Do1(xx.GetType(), generatedFiles, x.name);
         }
     }
 
@@ -119,7 +119,7 @@ public class ConvertMonoToComponentFixture {
         return componet;
     }
 
-    private static void Do1(Type t, HashSet<string> generatedFiles)
+    private static void Do1(Type t, HashSet<string> generatedFiles, string prefabName)
     {
         if(t.Assembly.GetName().Name != "Assembly-CSharp")
         {
@@ -128,23 +128,23 @@ public class ConvertMonoToComponentFixture {
 
         List<(string, Type)> list = GetAllTypes(t);
 
-        GenerateCode(t, list, generatedFiles);
+        GenerateCode(t, list, generatedFiles, prefabName);
 
         foreach(var x in list)
         {
             if(x.Item2.IsSubclassOf(typeof(MonoBehaviour)))
             {
-                Do1(x.Item2, generatedFiles);
+                Do1(x.Item2, generatedFiles, prefabName);
             }
             else if(x.Item2.IsSubclassOf(typeof(MonoBehaviour[])))
             {
                 var type = x.Item2.GetElementType();
-                Do1(type, generatedFiles);
+                Do1(type, generatedFiles, prefabName);
             }
         }
     }
 
-    private static void GenerateCode(Type type, List<(string, Type)> list, HashSet<string> generatedFiles)
+    private static void GenerateCode(Type type, List<(string, Type)> list, HashSet<string> generatedFiles, string prefabName)
     {
         // 命名规则，为baseview 一样？还是怎么命名。Baseveiew1吧。  
         var fileName = type.Name + "_Convert";
@@ -159,6 +159,9 @@ public class ConvertMonoToComponentFixture {
         codeGeneratorBuilder.AppendLine("using System.Linq;");
         using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
         {
+            // write fileName
+            codeGeneratorBuilder.AppendLine($"public static ViewInfo Info = new ViewInfo(){{path = \"{prefabName}\"}};");
+
             for(int i = 0; i < list.Count; i++)
             {
                 var filedName = list[i].Item1;
