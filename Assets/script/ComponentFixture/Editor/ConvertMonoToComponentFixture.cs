@@ -160,17 +160,76 @@ public class ConvertMonoToComponentFixture {
             for(int i = 0; i < list.Count; i++)
             {
                 var filedName = list[i].Item1;
-                var fieldType = GetSaveType(list[i].Item2);
+                var fieldType = GetSaveType(list[i].Item2, out var x);
 
                 codeGeneratorBuilder.AppendLine($"[SerializeField] public {fieldType} {filedName}; ");
             }
+
+            using(codeGeneratorBuilder.StartFold($"protected override bool SetByCodeGen(OneFiledRecord[] oneFiledRecords)")){
+                using(codeGeneratorBuilder.StartFold($"foreach(var oneFiledRecord in oneFiledRecords)")){
+                    for(int i = 0; i < list.Count; i++)
+                    {
+                        var item = list[i];
+                        var filedName = item.Item1;
+                        var type1 = item.Item2;
+                        var fieldType = GetSaveType(item.Item2, out var isComponentFixture);
+
+                        if(isComponentFixture)
+                        {
+                            if(type1.IsArray)
+                            {
+                                var elementType = GetSaveType(type1.GetElementType(), out var _);
+                                using(codeGeneratorBuilder.StartFold($"if(oneFiledRecord.filedName == \"{filedName}\") "))
+                                {
+                                    codeGeneratorBuilder.AppendLine($"var allCompnents = ((ArrayContainerComponentFixture)oneFiledRecord.Object).components;");
+                                    codeGeneratorBuilder.AppendLine($"{filedName} = new {elementType}[allCompnents.Length];");
+                                    codeGeneratorBuilder.AppendLine($"for(int i = 0; i < allCompnents.Length; i++) {filedName}[i] = allCompnents[i].CreateScript() as {elementType}; ");
+                                }
+                            }
+                            else
+                            {
+                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ComponentFixture1)oneFiledRecord.Object).CreateScript() as {fieldType}; ");
+                            }
+                        }
+                        else if(type1.IsArray)
+                        {
+                            if(type1.GetElementType() != typeof(GameObject))
+                            {
+                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerMono)(oneFiledRecord.Object)).gameObjects; ");
+                            }
+                            else
+                            {
+                                codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = ((ArrayContainerComponent)oneFiledRecord.Object).components as {fieldType}; ");
+                            }
+                        }
+                        else
+                        {
+                            codeGeneratorBuilder.AppendLine($"if(oneFiledRecord.filedName == \"{filedName}\") {filedName} = oneFiledRecord.Object as {fieldType}; ");
+                        }
+                    }
+                }
+
+                codeGeneratorBuilder.AppendLine("return true;");
+            }
         }
+
+        SaveCustomCSFile(fileName);
 
         codeGeneratorBuilder.Save();
         AssetDatabase.Refresh();
     }
 
-    private static string GetSaveType(Type item2)
+    private static void SaveCustomCSFile(string fileName)
+    {
+        CodeGeneratorBuilder codeGeneratorBuilder = new CodeGeneratorBuilder(Application.dataPath + $"/demo/ConvertedUI/{fileName}.Logic.cs");
+        codeGeneratorBuilder.AppendLine("using UnityEngine;");
+        using(codeGeneratorBuilder.StartFold($"public partial class {fileName} : BaseComponentScript"))
+        {
+        }
+        codeGeneratorBuilder.Save();
+    }
+
+    private static string GetSaveType(Type item2, out bool isComponentFixture)
     {
         Type t = item2;
         var x = t.FullName;
@@ -178,20 +237,24 @@ public class ConvertMonoToComponentFixture {
 
         if(t.Assembly.GetName().Name != "Assembly-CSharp")
         {
+            isComponentFixture = false;
             return x;
         }
 
         if(t.IsSubclassOf(typeof(MonoBehaviour)))
         {
+            isComponentFixture = true;
             return x + "_Convert";
         }
 
         if(t.IsArray)
         {
+            isComponentFixture = true;
             var tt = t.GetElementType();
             return tt.FullName + "_Convert[]";
         }
 
+        isComponentFixture = false;
         return x;
     }
 

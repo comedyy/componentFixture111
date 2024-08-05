@@ -11,53 +11,7 @@ public class BaseComponentScript
     {
         if(SetByCodeGen(fieldRecords)) return;
 
-        foreach(var fieldRecord in fieldRecords)
-        {
-            if(fieldRecord.Object == null) continue;
-
-            // by reflect
-            Type type = GetType();
-            FieldInfo info = type.GetField(fieldRecord.filedName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (info == null)
-            {
-                continue;
-            }
-
-            var fieldType = info.FieldType;
-
-            if(fieldType.IsArray)
-            {
-                var elementType = fieldType.GetElementType();
-                var arrayContainer = (ArrayContainerGameObject)fieldRecord.Object;
-                Array array = Array.CreateInstance(elementType, arrayContainer.Length);
-                for(int i = 0; i < arrayContainer.Length; i++)
-                {
-                    if(elementType == typeof(GameObject))
-                    {
-                        array.SetValue(arrayContainer[i] , i);
-                    }
-                    else if(elementType.IsSubclassOf(typeof(BaseComponentScript)))
-                    {
-                        array.SetValue(arrayContainer[i].GetComponent<ComponentFixture1>().CreateScript() , i);
-                    }
-                    else
-                    {
-                        array.SetValue(arrayContainer[i].GetComponent(elementType) , i);
-                    }
-                }
-
-                info.SetValue(this, array);
-            }
-            else if(fieldType.IsSubclassOf(typeof(BaseComponentScript)))
-            {
-                var x = ((ComponentFixture1)fieldRecord.Object).CreateScript();
-                info.SetValue(this, x);
-            }
-            else
-            {
-                info.SetValue(this, fieldRecord.Object);
-            }
-        }
+        throw new Exception("not implement SetByCodeGen" + this);
     }
 
     protected virtual bool SetByCodeGen(OneFiledRecord[] oneFiledRecords){ return false;}
